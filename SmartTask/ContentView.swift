@@ -1,24 +1,35 @@
-//
-//  ContentView.swift
-//  SmartTask
-//
-//  Created by Loi Nguyen on 14/3/25.
-//
-
 import SwiftUI
 
 struct ContentView: View {
+    @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var taskVM: TaskViewModel
+    @EnvironmentObject var categoryVM: CategoryViewModel
+    @EnvironmentObject var notificationManager: NotificationManager
+    @EnvironmentObject var notificationsVM: NotificationsViewModel
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        if authVM.isAuthenticated {
+            HomeView()
+                .environmentObject(taskVM)
+                .environmentObject(categoryVM)
+                .environmentObject(notificationManager)
+                .environmentObject(notificationsVM)
+        } else {
+            LoginView()
         }
-        .padding()
     }
 }
 
 #Preview {
-    ContentView()
+    let notificationsVM = NotificationsViewModel()
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let categoryVM = CategoryViewModel()
+    let notificationManager = NotificationManager()
+    return ContentView()
+        .environmentObject(AuthViewModel())
+        .environmentObject(taskVM)
+        .environmentObject(categoryVM)
+        .environmentObject(notificationManager)
+        .environmentObject(notificationsVM)
+        .environmentObject(CategoryViewModel())
 }

@@ -45,6 +45,31 @@
 			path = SmartTaskUITests;
 			sourceTree = "<group>";
 		};
+		7A857CB22D8400E6005657C7 /* Models */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Models;
+			sourceTree = "<group>";
+		};
+		7A857CB32D8400FC005657C7 /* ViewModels */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		7A857CB72D840139005657C7 /* Views */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Views;
+			sourceTree = "<group>";
+		};
+		7A857CE72D8402DB005657C7 /* Utils */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		7AD3CA362D84176400CC06F6 /* Services */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Services;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -79,6 +104,11 @@
 				7A857C972D840062005657C7 /* SmartTaskTests */,
 				7A857CA12D840062005657C7 /* SmartTaskUITests */,
 				7A857C852D840061005657C7 /* Products */,
+				7A857CB22D8400E6005657C7 /* Models */,
+				7A857CB32D8400FC005657C7 /* ViewModels */,
+				7A857CB72D840139005657C7 /* Views */,
+				7A857CE72D8402DB005657C7 /* Utils */,
+				7AD3CA362D84176400CC06F6 /* Services */,
 			);
 			sourceTree = "<group>";
 		};
@@ -109,6 +139,11 @@
 			);
 			fileSystemSynchronizedGroups = (
 				7A857C862D840061005657C7 /* SmartTask */,
+				7A857CB22D8400E6005657C7 /* Models */,
+				7A857CB32D8400FC005657C7 /* ViewModels */,
+				7A857CB72D840139005657C7 /* Views */,
+				7A857CE72D8402DB005657C7 /* Utils */,
+				7AD3CA362D84176400CC06F6 /* Services */,
 			);
 			name = SmartTask;
 			packageProductDependencies = (

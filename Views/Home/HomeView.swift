@@ -1,18 +1,52 @@
-//
-//  HomeView.swift
-//  SmartTask
-//
-//  Created by Loi Nguyen on 14/3/25.
-//
-
 import SwiftUI
 
 struct HomeView: View {
+    @State private var selectedTab: Int = 0
+    @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var categoryVM: CategoryViewModel
+    @EnvironmentObject var notificationsVM: NotificationsViewModel
+    @EnvironmentObject var taskVM: TaskViewModel // Thêm taskVM
+
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        TabView(selection: $selectedTab) {
+            TaskListView()
+                .environmentObject(categoryVM)
+                .environmentObject(taskVM)
+                .environmentObject(notificationsVM)
+                .tabItem {
+                    Label("Công việc", systemImage: "checklist")
+                }
+                .tag(0)
+
+            EventsView()
+                .tabItem {
+                    Label("Lịch", systemImage: "calendar")
+                }
+                .tag(1)
+
+            SettingsView()
+                .tabItem {
+                    Label("Cài đặt", systemImage: "gear")
+                }
+                .tag(2)
+
+            ProfileView()
+                .tabItem {
+                    Label("Hồ sơ", systemImage: "person.fill")
+                }
+                .tag(3)
+        }
+        .accentColor(.green)
     }
 }
 
 #Preview {
+    let notificationsVM = NotificationsViewModel()
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    
     HomeView()
+        .environmentObject(taskVM)
+        .environmentObject(AuthViewModel())
+        .environmentObject(CategoryViewModel())
+        .environmentObject(notificationsVM)
 }

@@ -1,18 +1,25 @@
-//
-//  ButtonAddTasksView.swift
-//  SmartTask
-//
-//  Created by Loi Nguyen on 15/3/25.
-//
-
 import SwiftUI
 
 struct ButtonAddTasksView: View {
+    let action: () -> Void // Đổi 'var' thành 'let' để rõ ràng hơn
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        HStack {
+            Spacer()
+            Button(action: action) {
+                Image(systemName: "leaf.fill")
+                    .font(.title)
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.blue)
+                    .clipShape(Circle())
+                    .shadow(radius: 4)
+            }
+            .padding()
+        }
     }
 }
 
 #Preview {
-    ButtonAddTasksView()
+    ButtonAddTasksView(action: {}) // 1 closure rỗng nhaaa
 }

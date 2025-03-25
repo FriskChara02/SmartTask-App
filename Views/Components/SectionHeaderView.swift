@@ -1,18 +1,16 @@
-//
-//  SectionHeaderView.swift
-//  SmartTask
-//
-//  Created by Loi Nguyen on 15/3/25.
-//
-
 import SwiftUI
 
 struct SectionHeaderView: View {
+    let title: String
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Text(title)
+            .font(.headline)
+            .foregroundColor(.blue)
+            .padding(.top, 10)
     }
 }
 
 #Preview {
-    SectionHeaderView()
+    SectionHeaderView(title: "Example Title") // ✅ Truyền tiêu đề mẫu
 }

@@ -6,3 +6,10 @@
 //
 
 import Foundation
+
+class NotificationManager: ObservableObject {
+    // Để trống cho Settings sau này
+    func configureSettings() {
+        print("Notification settings will be configured here in the future")
+    }
+}
