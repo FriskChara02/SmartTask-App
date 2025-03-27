@@ -4,6 +4,7 @@ struct RegisterView: View {
     @EnvironmentObject var authVM: AuthViewModel // Sửa thành EnvironmentObject
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var categoryVM: CategoryViewModel
+    @EnvironmentObject var userVM: UserViewModel
     
     @State private var name = ""
     @State private var email = ""
@@ -74,10 +75,13 @@ struct RegisterView: View {
     let notificationsVM = NotificationsViewModel()
     let taskVM = TaskViewModel(notificationsVM: notificationsVM)
     let authVM = AuthViewModel()
+    let userVM = UserViewModel()
     
     RegisterView()
         .environmentObject(taskVM)
         .environmentObject(CategoryViewModel())
         .environmentObject(authVM)
         .environmentObject(notificationsVM) // Thêm để đồng bộ
+        .environmentObject(userVM)
+        
 }

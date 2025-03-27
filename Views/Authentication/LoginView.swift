@@ -4,6 +4,7 @@ struct LoginView: View {
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var userVM: UserViewModel
     
     @State private var email = ""
     @State private var password = ""
@@ -86,10 +87,12 @@ struct AnyCodable: Decodable {
     let notificationsVM = NotificationsViewModel()
     let taskVM = TaskViewModel(notificationsVM: notificationsVM)
     let authVM = AuthViewModel()
+    let userVM = UserViewModel()
     
     LoginView()
         .environmentObject(taskVM)
         .environmentObject(CategoryViewModel())
         .environmentObject(authVM)
         .environmentObject(notificationsVM) // Thêm để đồng bộ với HomeView
+        .environmentObject(userVM)
 }

@@ -6,6 +6,8 @@ struct ContentView: View {
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var notificationManager: NotificationManager
     @EnvironmentObject var notificationsVM: NotificationsViewModel
+    @EnvironmentObject var userVM: UserViewModel
+
 
     var body: some View {
         if authVM.isAuthenticated {
@@ -25,6 +27,7 @@ struct ContentView: View {
     let taskVM = TaskViewModel(notificationsVM: notificationsVM)
     let categoryVM = CategoryViewModel()
     let notificationManager = NotificationManager()
+    let userVM = UserViewModel()
     return ContentView()
         .environmentObject(AuthViewModel())
         .environmentObject(taskVM)
@@ -32,4 +35,5 @@ struct ContentView: View {
         .environmentObject(notificationManager)
         .environmentObject(notificationsVM)
         .environmentObject(CategoryViewModel())
+        .environmentObject(userVM)
 }

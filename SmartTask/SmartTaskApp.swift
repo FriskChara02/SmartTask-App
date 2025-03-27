@@ -7,6 +7,7 @@ struct SmartTaskApp: App {
     @StateObject private var taskVM = TaskViewModel(notificationsVM: NotificationsViewModel()) // Khởi tạo trực tiếp
     @StateObject private var categoryVM = CategoryViewModel()
     @StateObject private var notificationManager = NotificationManager()
+    @StateObject private var userVM = UserViewModel()
     
 
     var body: some Scene {
@@ -17,6 +18,7 @@ struct SmartTaskApp: App {
                 .environmentObject(categoryVM)
                 .environmentObject(notificationManager)
                 .environmentObject(notificationsVM)
+                .environmentObject(userVM)
         }
     }
 }

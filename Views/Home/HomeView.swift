@@ -6,6 +6,7 @@ struct HomeView: View {
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var taskVM: TaskViewModel // Thêm taskVM
+    @EnvironmentObject var userVM: UserViewModel
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -43,10 +44,12 @@ struct HomeView: View {
 #Preview {
     let notificationsVM = NotificationsViewModel()
     let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let userVM = UserViewModel()
     
     HomeView()
         .environmentObject(taskVM)
         .environmentObject(AuthViewModel())
         .environmentObject(CategoryViewModel())
         .environmentObject(notificationsVM)
+        .environmentObject(userVM)
 }
