@@ -40,37 +40,48 @@ struct APIService {
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
         
         URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                completion(false, "Lỗi kết nối API!", nil)
+            if let error = error {
+                completion(false, "Lỗi kết nối API: \(error.localizedDescription)", nil)
                 return
             }
-            print("DEBUG: API Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
             
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-                let success = (response as? HTTPURLResponse)?.statusCode == 200
-                let message = json["error"] as? String ?? "Đăng nhập thành công!"
-                
-                if success {
-                    let user = UserModel(
-                        id: json["userId"] as? Int ?? 0,
-                        name: json["name"] as? String ?? "",
-                        email: json["email"] as? String ?? "",
-                        password: password, // Lấy từ input vì API không trả password
-                        avatarURL: nil, // API hiện tại không trả, để nil
-                        description: nil,
-                        dateOfBirth: nil,
-                        location: nil,
-                        joinedDate: nil,
-                        gender: nil,
-                        hobbies: nil,
-                        bio: nil
-                    )
-                    completion(true, message, user)
+            guard let data = data else {
+                completion(false, "Không nhận được dữ liệu từ API!", nil)
+                return
+            }
+            
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                    let success = (response as? HTTPURLResponse)?.statusCode == 200
+                    let message = json["error"] as? String ?? "Đăng nhập thành công! ✅"
+                    
+                    if success {
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy-MM-dd"
+                        
+                        let user = UserModel(
+                            id: json["userId"] as? Int ?? 0,
+                            name: json["name"] as? String ?? "",
+                            email: json["email"] as? String ?? "",
+                            password: password,
+                            avatarURL: json["avatar_url"] as? String,
+                            description: json["description"] as? String,
+                            dateOfBirth: (json["date_of_birth"] as? String).map { dateFormatter.date(from: $0) } ?? nil,
+                            location: json["location"] as? String,
+                            joinedDate: (json["joined_date"] as? String).map { dateFormatter.date(from: $0) } ?? nil,
+                            gender: json["gender"] as? String,
+                            hobbies: json["hobbies"] as? String,
+                            bio: json["bio"] as? String
+                        )
+                        completion(true, message, user)
+                    } else {
+                        completion(false, message, nil)
+                    }
                 } else {
-                    completion(false, message, nil)
+                    completion(false, "Phản hồi không hợp lệ: Không phải JSON object!", nil)
                 }
-            } else {
-                completion(false, "Phản hồi không hợp lệ!", nil)
+            } catch {
+                completion(false, "Lỗi parse JSON: \(error.localizedDescription)", nil)
             }
         }.resume()
     }

@@ -25,10 +25,12 @@ class AuthViewModel: ObservableObject {
                     self.isAuthenticated = true
                     self.currentUser = user
                     completion("Đăng nhập thành công!")
+                    print("✅ Login successful: \(user.email)")
                 } else {
                     self.isAuthenticated = false
                     self.currentUser = nil // Đảm bảo reset currentUser nếu thất bại
                     completion(message)
+                    print("❌ Login failed: \(message)")
                 }
             }
         }
@@ -47,6 +49,20 @@ class AuthViewModel: ObservableObject {
             UserDefaults.standard.removeObject(forKey: "userToken")
 
             print("Đã đăng xuất!")
+        }
+    }
+    
+    // Kiểm tra mật khẩu
+    func verifyPassword(_ password: String, completion: @escaping (Bool) -> Void) {
+        guard let user = currentUser else {
+            completion(false)
+            return
+        }
+        APIService.loginUser(email: user.email, password: password) { success, _, _ in
+            DispatchQueue.main.async {
+                completion(success) // Dùng login API để kiểm tra hash
+                print("DEBUG: Verify Password Result = \(success) for \(password)")
+            }
         }
     }
 }

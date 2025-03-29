@@ -3,6 +3,7 @@ import Foundation
 class TaskViewModel: ObservableObject {
     @Published var tasks: [TaskModel] = []
     @Published var userId: Int?
+    @Published var isRefreshing: Bool = false
     private let notificationsVM: NotificationsViewModel // Truyền qua init
 
     // Khởi tạo với notificationsVM
@@ -178,21 +179,36 @@ class TaskViewModel: ObservableObject {
     }
 
     // Cập nhật trạng thái hoàn thành
-    func toggleTaskCompletion(id: Int) {
-        guard let url = URL(string: "http://localhost/SmartTask_API/toggle_task.php?id=\(id)") else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        
-        URLSession.shared.dataTask(with: request) { _, response, error in
-            if let error = error {
-                print("❌ Lỗi khi gửi request:", error)
+    func toggleTaskCompletion(task: TaskModel) {
+            guard let id = task.id else { return }
+            guard let url = URL(string: "http://localhost/SmartTask_API/toggle_task.php?id=\(id)") else {
+                print("❌ Error: URL is nil")
                 return
             }
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                DispatchQueue.main.async {
-                    self.fetchTasks()
+            
+            var request = URLRequest(url: url)
+            request.httpMethod = "PUT"
+            
+            URLSession.shared.dataTask(with: request) { _, response, error in
+                if let error = error {
+                    print("❌ Lỗi khi gửi request:", error)
+                    return
                 }
-            }
-        }.resume()
+                if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
+                    DispatchQueue.main.async {
+                        if let index = self.tasks.firstIndex(where: { $0.id == id }) {
+                            self.tasks[index].isCompleted.toggle()
+                            print("✅ Đã cập nhật trạng thái task ID: \(id)")
+                        }
+                    }
+                }
+            }.resume()
+        }
+        
+        // Thêm hàm khởi tạo với userId
+        init(notificationsVM: NotificationsViewModel, userId: Int?) {
+            self.notificationsVM = notificationsVM
+            self.userId = userId
+            fetchTasks() // Tự động lấy task khi khởi tạo
+        }
     }
-}

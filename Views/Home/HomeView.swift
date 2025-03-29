@@ -19,7 +19,7 @@ struct HomeView: View {
                 }
                 .tag(0)
 
-            EventsView()
+            CalendarView()
                 .tabItem {
                     Label("Lịch", systemImage: "calendar")
                 }

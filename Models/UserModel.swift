@@ -1,6 +1,6 @@
 import Foundation
 
-struct UserModel: Identifiable, Codable {
+struct UserModel: Identifiable, Codable, Equatable {
     var id: Int
     var name: String
     var email: String
@@ -13,4 +13,9 @@ struct UserModel: Identifiable, Codable {
     var gender: String? // Giới tính
     var hobbies: String? // Sở thích
     var bio: String? // Giới thiệu
+    
+    // Triển khai Equatable: so sánh dựa trên id
+    static func == (lhs: UserModel, rhs: UserModel) -> Bool {
+        return lhs.id == rhs.id && lhs.email == rhs.email
+    }
 }

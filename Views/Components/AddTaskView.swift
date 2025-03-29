@@ -42,7 +42,7 @@ struct AddTaskView: View {
             
             Picker("Danh mục", selection: $selectedCategoryId) {
                 Text("Chọn danh mục").tag(nil as Int?)
-                ForEach(categoryVM.categories.filter { $0.name != "All" }) { category in // Dùng categoryVM
+                ForEach(categoryVM.categories.filter { $0.name != "All" }) { category in
                     Text(category.name).tag(category.id as Int?)
                 }
             }
@@ -50,7 +50,7 @@ struct AddTaskView: View {
             DatePicker("Hạn chót", selection: Binding(
                 get: { dueDate ?? Date() },
                 set: { dueDate = $0 }
-            ), displayedComponents: .date)
+            ), displayedComponents: [.date, .hourAndMinute])
         }
     }
     

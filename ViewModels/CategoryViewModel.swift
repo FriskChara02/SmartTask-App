@@ -39,8 +39,7 @@ class CategoryViewModel: ObservableObject {
                     print("✅ Đã tải \(decoded.count) categories")
                 }
             } catch {
-                print("Lỗi khi decode categories:", error)
-            }
+                print("❌ Lỗi khi decode categories: \(error.localizedDescription)")            }
         }.resume()
     }
     

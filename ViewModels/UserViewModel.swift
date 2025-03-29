@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import SwiftUI
 import PhotosUI
 
@@ -9,6 +8,8 @@ class UserViewModel: ObservableObject {
     @Published var isDeletingAccount = false
     @Published var selectedPhoto: PhotosPickerItem? = nil
     @Published var avatarImage: UIImage? = nil
+    @Published var showPasswordAlert: Bool = false
+    @Published var alertMessage: String = ""
 
     // Các trường chỉnh sửa
     @Published var editedName = ""
@@ -66,7 +67,7 @@ class UserViewModel: ObservableObject {
             id: user.id,
             name: editedName,
             email: editedEmail,
-            password: editedPassword.isEmpty ? user.password : editedPassword,
+            password: editedPassword.isEmpty ? user.password : editedPassword, // Gửi plaintext
             avatarURL: user.avatarURL,
             description: editedDescription,
             dateOfBirth: editedDateOfBirth,
@@ -80,8 +81,22 @@ class UserViewModel: ObservableObject {
         APIService.updateUser(user: updatedUser) { [weak self] success, message in
             DispatchQueue.main.async {
                 if success {
-                    self?.currentUser = updatedUser
-                    self?.authVM?.currentUser = updatedUser // Đồng bộ với authVM
+                    // Cập nhật currentUser với dữ liệu mới, nhưng không thay đổi password ở đây
+                    self?.currentUser = UserModel(
+                        id: user.id,
+                        name: updatedUser.name,
+                        email: updatedUser.email,
+                        password: self?.currentUser?.password ?? updatedUser.password, // Giữ hash cũ ở local
+                        avatarURL: updatedUser.avatarURL,
+                        description: updatedUser.description,
+                        dateOfBirth: updatedUser.dateOfBirth,
+                        location: updatedUser.location,
+                        joinedDate: updatedUser.joinedDate,
+                        gender: updatedUser.gender,
+                        hobbies: updatedUser.hobbies,
+                        bio: updatedUser.bio
+                    )
+                    self?.authVM?.currentUser = self?.currentUser
                     print("DEBUG: ✅ Cập nhật hồ sơ thành công")
                     completion()
                 } else {
@@ -89,6 +104,13 @@ class UserViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    // Hàm hash mật khẩu (giả định, thay bằng thư viện thực tế như BCrypt)
+    private func hashPassword(_ password: String) -> String {
+        // Thay bằng hàm hash thực tế từ backend hoặc thư viện như CryptoKit/BCrypt
+        // Ví dụ: return BCrypt.hash(password)
+        return "$2y$10$/86RvwhBRrYPDZnTGu4sf.LS8b5sQM5M.8ApKicYKwtlEJbZrXToa" // Placeholder
     }
 
     // Đăng xuất

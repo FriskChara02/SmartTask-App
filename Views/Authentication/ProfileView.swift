@@ -35,15 +35,17 @@ struct ProfileView: View {
                         .padding(.horizontal, 16)
                         .background(LinearGradient(gradient: Gradient(colors: [.cyan, .green]), startPoint: .leading, endPoint: .trailing))
                         .cornerRadius(20)
-                        .disabled(userVM.currentUser == nil) // Vô hiệu hóa nếu không có user
+                        .disabled(userVM.currentUser == nil)
                     }
                 }
             }
             .onAppear {
-                // Đồng bộ khi view xuất hiện
-                if userVM.currentUser == nil, let user = authVM.currentUser {
+                if let user = authVM.currentUser {
                     userVM.currentUser = user
                     userVM.loadUserDataForEditing(user: user)
+                    print("DEBUG: Loaded user on appear - \(user)")
+                } else {
+                    print("DEBUG: No user found in authVM on appear")
                 }
             }
         }
@@ -171,8 +173,18 @@ struct ProfileView: View {
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         .frame(width: 200)
                     Button(userVM.showPassword ? "Ẩn" : "Hiện") {
-                        if userVM.currentPassword == user.password {
-                            userVM.showPassword.toggle()
+                        if userVM.currentPassword.isEmpty {
+                            userVM.alertMessage = "You need to enter your password"
+                            userVM.showPasswordAlert = true
+                        } else {
+                            authVM.verifyPassword(userVM.currentPassword) { isValid in
+                                if isValid {
+                                    userVM.showPassword.toggle()
+                                } else {
+                                    userVM.alertMessage = "Incorrect password"
+                                    userVM.showPasswordAlert = true
+                                }
+                            }
                         }
                     }
                     .font(.subheadline)
@@ -181,7 +193,6 @@ struct ProfileView: View {
                     .padding(.horizontal, 12)
                     .background(Color.blue)
                     .cornerRadius(10)
-                    .disabled(userVM.currentPassword != user.password)
                 }
                 if userVM.showPassword {
                     HStack(spacing: 10) {
@@ -207,6 +218,15 @@ struct ProfileView: View {
             .padding(.vertical, 15)
             .background(Color.gray.opacity(0.05))
             .cornerRadius(15)
+            .alert(isPresented: $userVM.showPasswordAlert) {
+                Alert(
+                    title: Text("Thông báo"),
+                    message: Text(userVM.alertMessage),
+                    dismissButton: .default(Text("OK")) {
+                        userVM.showPasswordAlert = false
+                    }
+                )
+            }
 
             // VStack 2: Description, DateOfBirth, Location, JoinedDate
             VStack(spacing: 15) {
