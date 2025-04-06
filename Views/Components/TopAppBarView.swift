@@ -2,11 +2,14 @@ import SwiftUI
 
 struct TopAppBarView: View {
     @Binding var showMenu: Bool
-    @State private var showOverflowMenu = false
+    @Binding var selectedTab: String
+    
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var notificationManager: NotificationManager
     @EnvironmentObject var notificationsVM: NotificationsViewModel
+    
+    @State private var showOverflowMenu = false
     @State private var searchText = ""
     @State private var selectedTaskIds: Set<Int> = []
     @State private var isSelectingTasks = false
@@ -65,6 +68,7 @@ struct TopAppBarView: View {
                 .padding(.trailing, 8)
                 .sheet(isPresented: $showNotifications) {
                     NotificationView(
+                        selectedTab: $selectedTab,
                         selectedTaskIds: $selectedTaskIds,
                         onTaskSelected: { taskId in
                             if let notificationId = notificationsVM.notifications.first(where: { $0.taskId == taskId })?.id {
@@ -74,6 +78,7 @@ struct TopAppBarView: View {
                     )
                     .environmentObject(taskVM)
                     .environmentObject(notificationsVM)
+                    .environmentObject(categoryVM)
                 }
                 
                 // 🔍 Search Icon
@@ -85,23 +90,9 @@ struct TopAppBarView: View {
                 }
                 .padding(.trailing, 8)
                 .sheet(isPresented: $showSearchSheet) {
-                    NavigationView {
-                        VStack {
-                            TextField("Tìm kiếm task", text: $searchText)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                                .padding()
-                            List(taskVM.tasks.filter { searchText.isEmpty || $0.title.lowercased().contains(searchText.lowercased()) }) { task in
-                                Text(task.title)
-                                    .font(.body)
-                            }
-                        }
-                        .padding()
-                        .navigationBarItems(leading: Button(action: { showSearchSheet = false }) {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.blue)
-                        })
-                        .navigationTitle("Search")
-                    }
+                    SearchView(selectedTab: $selectedTab) // Truyền binding selectedTab
+                        .environmentObject(taskVM)
+                        .environmentObject(categoryVM) // Thêm categoryVM
                 }
                 
                 // ⋮ Overflow Menu
@@ -154,13 +145,15 @@ struct TopAppBarView: View {
 // Hàm hỗ trợ khởi tạo dữ liệu cho Preview
 private struct TopAppBarPreview: View {
     @Binding var showMenu: Bool // Thêm Binding
+    @Binding var selectedTab: String
     let notificationsVM = NotificationsViewModel()
     let taskVM: TaskViewModel
     let categoryVM = CategoryViewModel()
     let notificationManager = NotificationManager()
 
-    init(showMenu: Binding<Bool>) { // Thêm init để nhận Binding
+    init(showMenu: Binding<Bool>, selectedTab: Binding<String>) { // Thêm init để nhận Binding
         self._showMenu = showMenu
+        self._selectedTab = selectedTab
         taskVM = TaskViewModel(notificationsVM: notificationsVM)
         taskVM.tasks = [
             TaskModel(id: 1, userId: 1, title: "Học SwiftUI", description: "Làm bài tập", categoryId: 1, dueDate: Date(), isCompleted: false, createdAt: Date(), priority: "High"),
@@ -177,7 +170,7 @@ private struct TopAppBarPreview: View {
     }
 
     var body: some View {
-        TopAppBarView(showMenu: $showMenu) // Truyền showMenu vào TopAppBarView
+        TopAppBarView(showMenu: $showMenu, selectedTab: $selectedTab) // Truyền showMenu vào TopAppBarView
             .environmentObject(taskVM)
             .environmentObject(categoryVM)
             .environmentObject(notificationManager)
@@ -188,9 +181,10 @@ private struct TopAppBarPreview: View {
 #Preview {
     struct TopAppBarPreviewWrapper: View {
         @State private var showMenu = false
+        @State private var selectedTab = "Tab01"
         
         var body: some View {
-            TopAppBarPreview(showMenu: $showMenu)
+            TopAppBarPreview(showMenu: $showMenu, selectedTab: $selectedTab)
         }
     }
     

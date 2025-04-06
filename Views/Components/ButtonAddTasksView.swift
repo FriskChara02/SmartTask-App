@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ButtonAddTasksView: View {
+    @Environment(\.themeColor) var themeColor
+    
     let action: () -> Void // Đổi 'var' thành 'let' để rõ ràng hơn
     
     var body: some View {
@@ -11,7 +13,7 @@ struct ButtonAddTasksView: View {
                     .font(.title)
                     .foregroundColor(.white)
                     .padding()
-                    .background(Color.blue)
+                    .background(themeColor)
                     .clipShape(Circle())
                     .shadow(radius: 4)
             }

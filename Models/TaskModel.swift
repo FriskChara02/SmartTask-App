@@ -1,6 +1,6 @@
 import Foundation
 
-struct TaskModel: Identifiable, Codable {
+struct TaskModel: Identifiable, Codable, Equatable { // Conform to Equatable
     var id: Int?
     var userId: Int?
     var title: String
@@ -36,5 +36,18 @@ struct TaskModel: Identifiable, Codable {
         case isCompleted = "isCompleted"
         case createdAt = "created_at"
         case priority
+    }
+    
+    // Implementing the Equatable protocol manually to compare optional values
+    static func ==(lhs: TaskModel, rhs: TaskModel) -> Bool {
+        return lhs.id == rhs.id &&
+               lhs.userId == rhs.userId &&
+               lhs.title == rhs.title &&
+               lhs.description == rhs.description &&
+               lhs.categoryId == rhs.categoryId &&
+               lhs.dueDate == rhs.dueDate &&
+               lhs.isCompleted == rhs.isCompleted &&
+               lhs.createdAt == rhs.createdAt &&
+               lhs.priority == rhs.priority
     }
 }

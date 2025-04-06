@@ -3,12 +3,16 @@ import SwiftUI
 struct CalendarView: View {
     @StateObject private var taskVM: TaskViewModel
     @StateObject private var categoryVM = CategoryViewModel()
+    
     @EnvironmentObject var authVM: AuthViewModel
+    @Environment(\.themeColor) var themeColor
+    
     @State private var selectedDate = Date()
     @State private var currentMonth = Date()
     @State private var isCollapsed = false
     @State private var doubleTappedDate: Date?
     @State private var showAddTaskView = false
+    @State private var showDatePicker = false
     
     private let calendar = Calendar.current
     private let dateHelper = DateHelper.shared
@@ -22,7 +26,7 @@ struct CalendarView: View {
         NavigationView {
             ZStack {
                 // Gradient Background
-                LinearGradient(gradient: Gradient(colors: [.blue.opacity(0.1), .green.opacity(0.1)]), startPoint: .top, endPoint: .bottom)
+                LinearGradient(gradient: Gradient(colors: [themeColor.opacity(0.1), .green.opacity(0.1)]), startPoint: .top, endPoint: .bottom) // Dùng themeColor
                     .ignoresSafeArea()
                 
                 // Nội dung chính với ScrollView
@@ -47,7 +51,7 @@ struct CalendarView: View {
                         .frame(maxWidth: .infinity)
                         
                         // Thanh ngang giữa hàng 3 và 4
-                        LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)
+                        LinearGradient(gradient: Gradient(colors: [themeColor, .purple]), startPoint: .leading, endPoint: .trailing)
                             .frame(height: 2)
                             .cornerRadius(1)
                         
@@ -55,7 +59,7 @@ struct CalendarView: View {
                         categoryList
                         
                         // Thanh ngang giữa hàng 4 và 5
-                        LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing)
+                        LinearGradient(gradient: Gradient(colors: [themeColor, .purple]), startPoint: .leading, endPoint: .trailing)
                             .frame(height: 2)
                             .cornerRadius(1)
                         
@@ -107,22 +111,70 @@ struct CalendarView: View {
                     .font(.title2)
                     .foregroundColor(.blue)
                     .padding(8)
-                    .background(Color.white.opacity(0.8))
+                    .background(Color(.systemBackground).opacity(0.8))
                     .clipShape(Circle())
                     .shadow(radius: 2)
             }
             
             Spacer()
             
-            Text(" \(dateHelper.formatDate(currentMonth, format: "MMM, yyyy")) ")
-                .font(.title2)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-                .padding(.vertical, 8)
-                .padding(.horizontal, 16)
-                .background(Color.white.opacity(0.9))
-                .cornerRadius(12)
-                .shadow(radius: 3)
+            Button(action: {
+                showDatePicker = true // Hiển thị DatePicker khi nhấn
+            }) {
+                Text(" \(dateHelper.formatDate(currentMonth, format: "MMM, yyyy")) ")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 16)
+                    .background(Color(.systemBackground).opacity(0.9))
+                    .cornerRadius(12)
+                    .shadow(radius: 3)
+            }
+            .sheet(isPresented: $showDatePicker) {
+                VStack {
+                    // Thay DatePicker bằng Picker cho tháng và năm
+                    HStack {
+                        Picker("Month", selection: Binding(
+                            get: { calendar.component(.month, from: currentMonth) },
+                            set: { newMonth in
+                                var components = calendar.dateComponents([.year, .month], from: currentMonth)
+                                components.month = newMonth
+                                if let newDate = calendar.date(from: components) {
+                                    currentMonth = newDate
+                                }
+                            }
+                        )) {
+                            ForEach(1...12, id: \.self) { month in
+                                Text(DateFormatter().monthSymbols[month - 1]).tag(month)
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                        
+                        Picker("Year", selection: Binding(
+                            get: { calendar.component(.year, from: currentMonth) },
+                            set: { newYear in
+                                var components = calendar.dateComponents([.year, .month], from: currentMonth)
+                                components.year = newYear
+                                if let newDate = calendar.date(from: components) {
+                                    currentMonth = newDate
+                                }
+                            }
+                        )) {
+                            ForEach(2000...2100, id: \.self) { year in // Phạm vi năm tùy chỉnh
+                                Text(String(year))
+                            }
+                        }
+                        .pickerStyle(.wheel)
+                    }
+                    .frame(height: 200)
+                    
+                    Button("Done") {
+                        showDatePicker = false
+                    }
+                    .padding()
+                }
+            }
             
             Spacer()
             
@@ -135,7 +187,7 @@ struct CalendarView: View {
                     .font(.title2)
                     .foregroundColor(.blue)
                     .padding(8)
-                    .background(Color.white.opacity(0.8))
+                    .background(Color(.systemBackground).opacity(0.8))
                     .clipShape(Circle())
                     .shadow(radius: 2)
             }
@@ -149,7 +201,7 @@ struct CalendarView: View {
                     .font(.title2)
                     .foregroundColor(.purple)
                     .padding(8)
-                    .background(Color.white.opacity(0.8))
+                    .background(Color(.systemBackground).opacity(0.8))
                     .clipShape(Circle())
                     .shadow(radius: 2)
             }
@@ -166,7 +218,7 @@ struct CalendarView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
                     .foregroundColor(.green) // Màu xanh lá
-                    .background(Color.white.opacity(0.9))
+                    .background(Color(.systemBackground).opacity(0.9))
             }
         }
         .cornerRadius(8)
@@ -191,7 +243,7 @@ struct CalendarView: View {
             }
         }
         .padding(8)
-        .background(Color.white.opacity(0.95))
+        .background(Color(.systemBackground).opacity(0.95))
         .cornerRadius(12)
         .shadow(radius: 5)
     }
@@ -208,7 +260,7 @@ struct CalendarView: View {
             }
         }
         .padding(8)
-        .background(Color.white.opacity(0.95))
+        .background(Color(.systemBackground).opacity(0.95))
         .cornerRadius(12)
         .shadow(radius: 5)
     }
@@ -228,7 +280,7 @@ struct CalendarView: View {
             VStack(spacing: 4) {
                 Text("\(calendar.component(.day, from: date))")
                     .font(.system(size: 16, weight: isSelected ? .bold : .regular))
-                    .foregroundColor(isSelected ? .white : (isToday ? .blue : .black))
+                    .foregroundColor(isSelected ? .white : (isToday ? .mint : .primary))
                     .frame(width: 45, height: 45)
                     .background(
                         Group {
@@ -263,7 +315,7 @@ struct CalendarView: View {
                                     .foregroundColor(categoryColor(for: task.categoryId).opacity(0.8)) // Màu category, nhạt 20%
                                     .lineLimit(1)
                                     .padding(.horizontal, 4)
-                                    .background(Color.white.opacity(0.8))
+                                    .background(Color(.systemBackground).opacity(0.8))
                                     .cornerRadius(4)
                             }
                         }
@@ -311,7 +363,7 @@ struct CalendarView: View {
                             }
                             .padding(.vertical, 6)
                             .padding(.horizontal, 10)
-                            .background(Color.white.opacity(0.95))
+                            .background(Color(.systemBackground).opacity(0.95))
                             .cornerRadius(10)
                             .shadow(radius: 3)
                         }
@@ -349,7 +401,7 @@ struct CalendarView: View {
                         }
                     })
                     .padding(.horizontal)
-                    .background(Color.white.opacity(0.95))
+                    .background(Color(.systemBackground).opacity(0.95))
                     .cornerRadius(10)
                     .shadow(radius: 2)
                     .transition(.move(edge: .bottom).combined(with: .opacity))

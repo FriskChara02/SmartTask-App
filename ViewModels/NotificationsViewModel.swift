@@ -125,6 +125,26 @@ class NotificationsViewModel: ObservableObject {
         }.resume()
     }
     
+    // Xóa nhiều thông báo cùng lúc
+    func deleteNotifications(ids: [String]) {
+        guard let url = URL(string: "\(baseURL)/notifications.php") else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "DELETE"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body = ["ids": ids]
+        request.httpBody = try? JSONEncoder().encode(body)
+        
+        URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+            if error == nil {
+                DispatchQueue.main.async {
+                    self?.notifications.removeAll { ids.contains($0.id) }
+                }
+            }
+        }.resume()
+    }
+    
     // Đếm số thông báo chưa đọc
     var unreadCount: Int {
         notifications.filter { !$0.isRead }.count

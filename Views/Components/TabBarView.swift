@@ -5,6 +5,7 @@ struct TabBarView: View {
     let selectedCategory: Category? // Thêm tham số từ HamburgerMenuView
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var categoryVM: CategoryViewModel
+    @Environment(\.themeColor) var themeColor
     
     @State private var isShowingManageScreen = false
 
@@ -20,12 +21,12 @@ struct TabBarView: View {
                         Text("All")
                             .padding(.vertical, 8)
                             .padding(.horizontal, 16)
-                            .background(selectedTab == "All" ? Color.blue.opacity(0.2) : Color.clear)
+                            .background(selectedTab == "All" ? themeColor.opacity(0.2) : Color.clear)
                             .cornerRadius(10)
-                            .foregroundColor(selectedTab == "All" ? .blue : .gray)
+                            .foregroundColor(selectedTab == "All" ? themeColor : .gray)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 10)
-                                    .stroke(selectedTab == "All" ? Color.blue : Color.clear, lineWidth: 1)
+                                    .stroke(selectedTab == "All" ? themeColor : Color.clear, lineWidth: 1)
                             )
                     }
                     
@@ -37,12 +38,12 @@ struct TabBarView: View {
                             Text(category.name)
                                 .padding(.vertical, 8)
                                 .padding(.horizontal, 16)
-                                .background(selectedTab == category.name ? Color.blue.opacity(0.2) : Color.clear)
+                                .background(selectedTab == category.name ? themeColor.opacity(0.2) : Color.clear)
                                 .cornerRadius(10)
-                                .foregroundColor(selectedTab == category.name ? .blue : .gray)
+                                .foregroundColor(selectedTab == category.name ? themeColor : .gray)
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 10)
-                                        .stroke(selectedTab == category.name ? Color.blue : Color.clear, lineWidth: 1)
+                                        .stroke(selectedTab == category.name ? themeColor : Color.clear, lineWidth: 1)
                                 )
                         }
                     }

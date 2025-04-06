@@ -6,9 +6,13 @@ struct TaskListView: View {
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var authVM: AuthViewModel
+    @Environment(\.themeColor) var themeColor
+    
     @State private var showMenu = false
     @State private var selectedTab: String = "All"
     @State private var isAddingTask = false
+    @State private var isShowingNotifications = false
+    @State private var selectedTaskIds: Set<Int> = []
     
     var body: some View {
         ZStack {
@@ -50,7 +54,7 @@ struct TaskListView: View {
     // MARK: - Main Content
     private var mainContent: some View {
         VStack(spacing: 0) {
-            TopAppBarView(showMenu: $showMenu)
+            TopAppBarView(showMenu: $showMenu, selectedTab: $selectedTab)
             TabBarView(selectedTab: $selectedTab, selectedCategory: nil)
             taskListNavigation
         }
@@ -72,16 +76,34 @@ struct TaskListView: View {
             .navigationTitle("Danh sách công việc")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
-                    Button(action: {
-                        taskVM.isRefreshing = true // Bắt đầu hiệu ứng mờ
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            taskVM.fetchTasks() // Tải lại task
-                            taskVM.isRefreshing = false // Kết thúc hiệu ứng, task hiện từ từ
+                    HStack {
+                        Button(action: {
+                            taskVM.isRefreshing = true // Bắt đầu hiệu ứng mờ
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                taskVM.fetchTasks() // Tải lại task
+                                taskVM.isRefreshing = false // Kết thúc hiệu ứng, task hiện từ từ
+                            }
+                        }) {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(themeColor)
                         }
-                    }) {
-                        Image(systemName: "heart.fill")
                     }
                 }
+            }
+            .sheet(isPresented: $isShowingNotifications) {
+                NotificationView(
+                    selectedTab: $selectedTab, // Truyền selectedTab từ TaskListView
+                    selectedTaskIds: $selectedTaskIds,
+                    onTaskSelected: { taskId in
+                        // Logic khi chọn task (nếu cần)
+                        if let taskId = taskId {
+                            selectedTaskIds.insert(taskId)
+                        }
+                    }
+                )
+                .environmentObject(taskVM)
+                .environmentObject(notificationsVM)
+                .environmentObject(categoryVM)
             }
         }
     }

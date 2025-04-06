@@ -1,8 +1,14 @@
+//
+//  HamburgerMenuView.swift
+//  SmartTask
+//
+
 import SwiftUI
 
 struct HamburgerMenuView: View {
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var taskVM: TaskViewModel
+    @Environment(\.themeColor) var themeColor
     
     @Binding var showMenu: Bool
     @Binding var selectedTab: String
@@ -31,97 +37,98 @@ struct HamburgerMenuView: View {
                         .foregroundColor(.cyan)
                         .padding(.top, 50)
                         .padding(.leading, 20)
-
                     
                     Divider()
                         .padding(.horizontal)
                     
-                    List {
-                        // Section 1: Tasks
-                        Section(header: Text("Tasks").font(.headline)) {
-                            MenuItem(icon: "star.fill", title: "Favorite Tasks", destination: EmptyViewWithText(text: "Favorite Tasks - Chưa triển khai"), color: .yellow)
-                            MenuItem(icon: "target", title: "Habits", destination: EmptyViewWithText(text: "Habits - Chưa triển khai"), color: .green)
-                            
-                            // Category với Section ẩn
-                            HStack(spacing: 12) {
-                                Image(systemName: "square.grid.2x2.fill")
-                                    .foregroundColor(.blue)
-                                    .frame(width: 30)
-                                Text("Category")
-                                    .foregroundColor(.primary)
-                                    .font(.headline)
-                                Spacer()
-                                Image(systemName: isCategoryExpanded ? "chevron.down" : "chevron.right")
-                                    .foregroundColor(.blue)
-                            }
-                            .padding(.vertical, 5)
-                            .contentShape(Rectangle())
-                            .onTapGesture {
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    isCategoryExpanded.toggle()
+                    NavigationView { // Thêm NavigationView bao quanh List
+                        List {
+                            // Section 1: Tasks
+                            Section(header: Text("Tasks").font(.headline).foregroundColor(themeColor)) {
+                                MenuItem(icon: "star.fill", title: "Favorite Tasks", destination: EmptyViewWithText(text: "Favorite Tasks - Chưa triển khai"), color: .yellow)
+                                MenuItem(icon: "target", title: "Habits", destination: EmptyViewWithText(text: "Habits - Chưa triển khai"), color: .green)
+                                
+                                // Category với Section ẩn
+                                HStack(spacing: 12) {
+                                    Image(systemName: "square.grid.2x2.fill")
+                                        .foregroundColor(.blue)
+                                        .frame(width: 30)
+                                    Text("Category")
+                                        .foregroundColor(.blue)
+                                        .font(.headline)
+                                    Spacer()
+                                    Image(systemName: isCategoryExpanded ? "chevron.down" : "chevron.right")
+                                        .foregroundColor(.green)
+                                }
+                                .padding(.vertical, 5)
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    withAnimation(.easeInOut(duration: 0.2)) {
+                                        isCategoryExpanded.toggle()
+                                    }
                                 }
                             }
-                        }
-                        
-                        // Section ẩn: Categories
-                        if isCategoryExpanded {
-                            Section(header: Text("Categories").font(.headline)) {
-                                
-                                // Danh sách categories
-                                if categoryVM.categories.isEmpty {
-                                    Text("No categories available")
-                                        .foregroundColor(.gray)
-                                } else {
-                                    ForEach(categoryVM.categories) { category in
-                                        HStack(spacing: 12) {
-                                            Image(systemName: category.icon ?? "folder")
-                                                .foregroundColor(.blue)
-                                                .frame(width: 30)
-                                            Text(category.name)
-                                                .foregroundColor(.primary)
-                                                .font(.body)
-                                            Spacer()
-                                        }
-                                        .padding(.vertical, 5)
-                                        .contentShape(Rectangle()) // Fill toàn bộ khung
-                                        .onTapGesture {
-                                            withAnimation(.easeInOut(duration: 0.3)) {
-                                                selectedTab = category.name
-                                                showMenu = false
+                            
+                            // Section ẩn: Categories
+                            if isCategoryExpanded {
+                                Section(header: Text("Categories").font(.headline).foregroundColor(themeColor)) {
+                                    
+                                    // Danh sách categories
+                                    if categoryVM.categories.isEmpty {
+                                        Text("No categories available")
+                                            .foregroundColor(.gray)
+                                    } else {
+                                        ForEach(categoryVM.categories) { category in
+                                            HStack(spacing: 12) {
+                                                Image(systemName: category.icon ?? "folder")
+                                                    .foregroundColor(themeColor) // Đổi từ .blue sang themeColor
+                                                    .frame(width: 30)
+                                                Text(category.name)
+                                                    .foregroundColor(themeColor) // Đổi từ .primary sang themeColor
+                                                    .font(.body)
+                                                Spacer()
+                                            }
+                                            .padding(.vertical, 5)
+                                            .contentShape(Rectangle()) // Fill toàn bộ khung
+                                            .onTapGesture {
+                                                withAnimation(.easeInOut(duration: 0.3)) {
+                                                    selectedTab = category.name
+                                                    showMenu = false
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                
-                                // Create New
-                                HStack(spacing: 12) {
-                                    Image(systemName: "plus")
-                                        .foregroundColor(.blue)
-                                        .frame(width: 30)
-                                    Text("Create New")
-                                        .foregroundColor(.primary)
-                                        .font(.body)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 5)
-                                .contentShape(Rectangle()) // Fill toàn bộ khung
-                                .onTapGesture {
-                                    isShowingManageScreen = true
+                                    
+                                    // Create New
+                                    HStack(spacing: 12) {
+                                        Image(systemName: "plus")
+                                            .foregroundColor(themeColor) // Đổi từ .blue sang themeColor
+                                            .frame(width: 30)
+                                        Text("Create New")
+                                            .foregroundColor(themeColor) // Đổi từ .primary sang themeColor
+                                            .font(.body)
+                                        Spacer()
+                                    }
+                                    .padding(.vertical, 5)
+                                    .contentShape(Rectangle()) // Fill toàn bộ khung
+                                    .onTapGesture {
+                                        isShowingManageScreen = true
+                                    }
                                 }
                             }
+                            
+                            // Section 2: Options
+                            Section(header: Text("Options").font(.headline).foregroundColor(themeColor)) {
+                                MenuItem(icon: "paintpalette.fill", title: "Theme", destination: ThemeView(), color: .purple)
+                                MenuItem(icon: "rectangle.3.offgrid.fill", title: "Widget", destination: EmptyViewWithText(text: "Widget - Chưa triển khai"), color: .orange)
+                                MenuItem(icon: "square.and.arrow.up.fill", title: "Share App", destination: ShareAppView(), color: .pink)
+                                MenuItem(icon: "envelope.badge", title: "Feedback", destination: SendFeedbackView(), color: .red)
+                                MenuItem(icon: "questionmark.circle", title: "FAQ", destination: FAQView(), color: .teal)
+                                MenuItem(icon: "gear", title: "Settings", destination: SettingsView(), color: .gray)
+                            }
                         }
-                        
-                        // Section 2: Options
-                        Section(header: Text("Options").font(.headline)) {
-                            MenuItem(icon: "paintpalette.fill", title: "Theme", destination: EmptyViewWithText(text: "Theme - Chưa triển khai"), color: .purple)
-                            MenuItem(icon: "rectangle.3.offgrid.fill", title: "Widget", destination: EmptyViewWithText(text: "Widget - Chưa triển khai"), color: .orange)
-                            MenuItem(icon: "square.and.arrow.up.fill", title: "Share App", destination: EmptyViewWithText(text: "Share App - Chưa triển khai"), color: .pink)
-                            MenuItem(icon: "envelope.badge", title: "Feedback", destination: EmptyViewWithText(text: "Feedback - Chưa triển khai"), color: .red)
-                            MenuItem(icon: "questionmark.circle", title: "FAQ", destination: EmptyViewWithText(text: "FAQ - Chưa triển khai"), color: .teal)
-                            MenuItem(icon: "gear", title: "Settings", destination: EmptyViewWithText(text: "Settings - Chưa triển khai"), color: .gray)
-                        }
+                        .listStyle(InsetGroupedListStyle())
                     }
-                    .listStyle(InsetGroupedListStyle())
                     
                     Spacer()
                 }

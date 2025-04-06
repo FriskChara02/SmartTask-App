@@ -3,10 +3,12 @@ import SwiftUI
 struct SectionHeaderView: View {
     let title: String
     
+    @Environment(\.themeColor) var themeColor
+    
     var body: some View {
         Text(title)
             .font(.headline)
-            .foregroundColor(.blue)
+            .foregroundColor(themeColor)
             .padding(.top, 10)
     }
 }

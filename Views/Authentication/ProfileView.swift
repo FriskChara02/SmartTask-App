@@ -130,7 +130,7 @@ struct ProfileView: View {
                     .font(.subheadline)
                     .foregroundColor(.red)
                     .padding()
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
                     .cornerRadius(10)
                     .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
             }
@@ -148,7 +148,7 @@ struct ProfileView: View {
                     TextField("Tên", text: $userVM.editedName)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -158,7 +158,7 @@ struct ProfileView: View {
                     TextField("Email", text: $userVM.editedEmail)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -168,7 +168,7 @@ struct ProfileView: View {
                     SecureField("Mật khẩu hiện tại", text: $userVM.currentPassword)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                         .frame(width: 200)
@@ -209,7 +209,7 @@ struct ProfileView: View {
                     SecureField("Mật khẩu mới", text: $userVM.editedPassword)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -236,7 +236,7 @@ struct ProfileView: View {
                     TextField("Mô tả", text: $userVM.editedDescription)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -246,7 +246,7 @@ struct ProfileView: View {
                     DatePicker("Ngày sinh", selection: $userVM.editedDateOfBirth, displayedComponents: .date)
                         .labelsHidden()
                         .padding(8)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -256,7 +256,7 @@ struct ProfileView: View {
                     TextField("Địa điểm", text: $userVM.editedLocation)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -285,7 +285,7 @@ struct ProfileView: View {
                     }
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(5)
-                    .background(Color.white)
+                    .background(Color(.systemBackground))
                     .cornerRadius(12)
                     .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -295,7 +295,7 @@ struct ProfileView: View {
                     TextField("Sở thích", text: $userVM.editedHobbies)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -305,7 +305,7 @@ struct ProfileView: View {
                     TextField("Giới thiệu", text: $userVM.editedBio)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
-                        .background(Color.white)
+                        .background(Color(.systemBackground))
                         .cornerRadius(12)
                         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
                 }
@@ -359,7 +359,7 @@ struct ProfileView: View {
                 }
             }
             .padding()
-            .background(Color.white)
+            .background(Color(.systemBackground))
             .cornerRadius(15)
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
@@ -403,7 +403,7 @@ struct ProfileView: View {
                 }
             }
             .padding()
-            .background(Color.white)
+            .background(Color(.systemBackground))
             .cornerRadius(15)
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
@@ -438,7 +438,7 @@ struct ProfileView: View {
                 }
             }
             .padding()
-            .background(Color.white)
+            .background(Color(.systemBackground))
             .cornerRadius(15)
             .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
