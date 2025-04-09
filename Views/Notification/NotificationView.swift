@@ -31,7 +31,7 @@ struct NotificationView: View {
                 notificationRow(notification: notification) // Tách thành view riêng
             }
             .listStyle(.plain) // Loại bỏ viền mặc định của List
-            .navigationTitle("Notifications")
+            .navigationTitle("Notifications ❀")
             .toolbar {
                 // MARK: - Toolbar Left
                 ToolbarItem(placement: .navigationBarLeading) {

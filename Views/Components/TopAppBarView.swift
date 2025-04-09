@@ -97,11 +97,11 @@ struct TopAppBarView: View {
                 
                 // ⋮ Overflow Menu
                 Menu {
-                    Button("Select tasks", action: {
+                    Button("Select tasks ❆", action: {
                         isSelectingTasks.toggle()
                         selectedTaskIds.removeAll()
                     })
-                    Menu("Sort by") {
+                    Menu("Sort by ❅") {
                         Button("Due date & Time") { taskVM.tasks.sort { ($0.dueDate ?? Date.distantFuture) < ($1.dueDate ?? Date.distantFuture) }; print("Đã sắp xếp theo ngày & giờ") }
                         Button("Task create time") { taskVM.tasks.sort { ($0.createdAt ?? Date.distantPast) < ($1.createdAt ?? Date.distantPast) }; print("Đã sắp xếp theo thời gian tạo") }
                         Button("Alphabetical A-Z") { taskVM.tasks.sort { $0.title < $1.title }; print("Đã sắp xếp A-Z") }

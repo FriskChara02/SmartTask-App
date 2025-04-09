@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ThemeView: View {
     @Environment(\.colorScheme) var colorScheme
-    @State private var isDarkMode: Bool = false
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false // Thay @State bằng @AppStorage để lưu lâu dài
     @AppStorage("themeColor") private var themeColor: String = "Blue" //Lưu tên màu mặc định
     @Environment(\.themeColor) var selectedThemeColor
     
@@ -79,7 +79,9 @@ struct ThemeView: View {
         }
         .onAppear {
             //Đồng bộ với trạng thái Dark Mode ban đầu
-            isDarkMode = colorScheme == .dark
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                windowScene.windows.first?.overrideUserInterfaceStyle = isDarkMode ? .dark : .light
+            }
         }
     }
 }

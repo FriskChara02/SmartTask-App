@@ -7,7 +7,7 @@ struct SettingsView: View {
         NavigationView {
             List {
                 // Section 1: Account
-                Section(header: Text("Account").font(.headline)) {
+                Section(header: Text("Account ✿").font(.headline)) {
                     NavigationLink(destination: ProfileView()) {
                         HStack(spacing: 15) {
                             if let avatarURL = authVM.currentUser?.avatarURL, !avatarURL.isEmpty {
@@ -46,7 +46,7 @@ struct SettingsView: View {
                 }
                 
                 // Section 2: Customize
-                Section(header: Text("Customize").font(.headline)) {
+                Section(header: Text("Customize ✦").font(.headline)) {
                     NavigationLink(destination: ThemeView()) {
                         HStack {
                             Image(systemName: "paintpalette.fill")
@@ -82,7 +82,7 @@ struct SettingsView: View {
                 }
                 
                 // Section 3: Help and Policies
-                Section(header: Text("Help and Policies").font(.headline)) {
+                Section(header: Text("Help and Policies ⋆˙⟡").font(.headline)) {
                     NavigationLink(destination: HelpView()) {
                         HStack {
                             Image(systemName: "questionmark.circle.fill")
@@ -107,7 +107,7 @@ struct SettingsView: View {
                 }
                 
                 // Section 4: About
-                Section(header: Text("About").font(.headline)) {
+                Section(header: Text("About ᝰ.ᐟ").font(.headline)) {
                     NavigationLink(destination: SendFeedbackView()) {
                         HStack {
                             Image(systemName: "envelope.fill")
@@ -147,7 +147,7 @@ struct SettingsView: View {
                 }
             }
             .tint(.green)
-            .navigationTitle("Settings")
+            .navigationTitle("Settings ❀")
         }
     }
 }

@@ -16,7 +16,7 @@ struct RegisterView: View {
     var body: some View {
         NavigationStack {
             VStack {
-                Text("Đăng Ký").font(.largeTitle).bold()
+                Text("Đăng Ký ❅").font(.largeTitle).bold()
 
                 TextField("Họ và tên", text: $name)
                     .textFieldStyle(RoundedBorderTextFieldStyle())

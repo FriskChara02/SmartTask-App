@@ -8,7 +8,8 @@ struct ProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var userVM: UserViewModel
-    
+    @Environment(\.themeColor) var themeColor
+
     var body: some View {
         NavigationView {
             ScrollView {
@@ -19,22 +20,35 @@ struct ProfileView: View {
                 }
                 .background(Color.gray.opacity(0.03))
             }
-            .navigationTitle("Hồ sơ")
+            .navigationTitle("Hồ sơ ㅤ✧˚ ⋆｡˚")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if userVM.isEditing {
+                        Button(action: {
+                            userVM.isEditing = false // Hủy chỉnh sửa
+                        }) {
+                            Image(systemName: "chevron.left")
+                                .foregroundColor(.blue)
+                                .font(.system(size: 18, weight: .semibold))
+                        }
+                    }
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     if !userVM.isEditing {
-                        Button("Sửa") {
+                        Button("Sửa༄") {
                             if let user = userVM.currentUser {
                                 userVM.loadUserDataForEditing(user: user)
                                 userVM.isEditing = true
                             }
                         }
-                        .font(.headline)
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.white)
                         .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 20)
                         .background(LinearGradient(gradient: Gradient(colors: [.cyan, .green]), startPoint: .leading, endPoint: .trailing))
                         .cornerRadius(20)
+                        .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
+                        .frame(maxWidth: .infinity, alignment: .center)
                         .disabled(userVM.currentUser == nil)
                     }
                 }
@@ -61,7 +75,7 @@ struct ProfileView: View {
                     .frame(width: 130, height: 130)
                     .clipShape(Circle())
                     .overlay(Circle().stroke(Color.blue.opacity(0.5), lineWidth: 2))
-                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             } else if let avatarURL = userVM.currentUser?.avatarURL, !avatarURL.isEmpty {
                 AsyncImage(url: URL(string: avatarURL)) { phase in
                     if let image = phase.image {
@@ -71,7 +85,7 @@ struct ProfileView: View {
                             .frame(width: 130, height: 130)
                             .clipShape(Circle())
                             .overlay(Circle().stroke(Color.blue.opacity(0.5), lineWidth: 2))
-                            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                            .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
                     } else {
                         Image(systemName: "person.circle.fill")
                             .resizable()
@@ -80,7 +94,7 @@ struct ProfileView: View {
                             .clipShape(Circle())
                             .foregroundColor(.gray.opacity(0.7))
                             .overlay(Circle().stroke(Color.blue.opacity(0.5), lineWidth: 2))
-                            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                            .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
                     }
                 }
             } else {
@@ -91,7 +105,7 @@ struct ProfileView: View {
                     .clipShape(Circle())
                     .foregroundColor(.gray.opacity(0.7))
                     .overlay(Circle().stroke(Color.blue.opacity(0.5), lineWidth: 2))
-                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+                    .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             }
             if userVM.isEditing {
                 PhotosPicker("Chọn Avatar", selection: $userVM.selectedPhoto, matching: .images)
@@ -101,7 +115,7 @@ struct ProfileView: View {
                     .padding(.horizontal, 16)
                     .background(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing))
                     .cornerRadius(20)
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                    .shadow(color: Color.primary.opacity(0.2), radius: 5, x: 0, y: 2)
                     .onChange(of: userVM.selectedPhoto) {
                         Task {
                             if let data = try? await userVM.selectedPhoto?.loadTransferable(type: Data.self),
@@ -131,8 +145,8 @@ struct ProfileView: View {
                     .foregroundColor(.red)
                     .padding()
                     .background(Color(.systemBackground))
-                    .cornerRadius(10)
-                    .shadow(color: Color.black.opacity(0.1), radius: 5, x: 0, y: 2)
+                    .cornerRadius(15)
+                    .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
             }
         }
     }
@@ -150,29 +164,29 @@ struct ProfileView: View {
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "envelope.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.teal)
                     TextField("Email", text: $userVM.editedEmail)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "lock.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.mint)
                     SecureField("Mật khẩu hiện tại", text: $userVM.currentPassword)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                         .frame(width: 200)
-                    Button(userVM.showPassword ? "Ẩn" : "Hiện") {
+                    Button(userVM.showPassword ? "Ẩn ❀" : "Hiện ⏾") {
                         if userVM.currentPassword.isEmpty {
                             userVM.alertMessage = "You need to enter your password"
                             userVM.showPasswordAlert = true
@@ -191,13 +205,13 @@ struct ProfileView: View {
                     .foregroundColor(.white)
                     .padding(.vertical, 6)
                     .padding(.horizontal, 12)
-                    .background(Color.blue)
+                    .background(themeColor)
                     .cornerRadius(10)
                 }
                 if userVM.showPassword {
                     HStack(spacing: 10) {
                         Image(systemName: "lock.open.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(themeColor)
                         Text(user.password)
                             .font(.subheadline)
                             .foregroundColor(.gray)
@@ -205,13 +219,13 @@ struct ProfileView: View {
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "lock.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(themeColor)
                     SecureField("Mật khẩu mới", text: $userVM.editedPassword)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
             }
             .padding(.horizontal, 20)
@@ -232,33 +246,33 @@ struct ProfileView: View {
             VStack(spacing: 15) {
                 HStack(spacing: 10) {
                     Image(systemName: "text.quote")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.cyan)
                     TextField("Mô tả", text: $userVM.editedDescription)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "calendar")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.yellow)
                     DatePicker("Ngày sinh", selection: $userVM.editedDateOfBirth, displayedComponents: .date)
                         .labelsHidden()
                         .padding(8)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "location.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.green)
                     TextField("Địa điểm", text: $userVM.editedLocation)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "clock.fill")
@@ -277,7 +291,7 @@ struct ProfileView: View {
             VStack(spacing: 15) {
                 HStack(spacing: 10) {
                     Image(systemName: "person.2.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.pink)
                     Picker("Giới tính", selection: $userVM.editedGender) {
                         Text("Nam").tag("Nam")
                         Text("Nữ").tag("Nữ")
@@ -287,17 +301,17 @@ struct ProfileView: View {
                     .padding(5)
                     .background(Color(.systemBackground))
                     .cornerRadius(12)
-                    .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                    .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "heart.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.red)
                     TextField("Sở thích", text: $userVM.editedHobbies)
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
                     Image(systemName: "info.circle.fill")
@@ -307,7 +321,7 @@ struct ProfileView: View {
                         .padding(12)
                         .background(Color(.systemBackground))
                         .cornerRadius(12)
-                        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
+                        .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
             }
             .padding(.horizontal, 20)
@@ -315,18 +329,18 @@ struct ProfileView: View {
             .background(Color.gray.opacity(0.05))
             .cornerRadius(15)
 
-            Button("Lưu") {
+            Button("Lưu ❀") {
                 userVM.saveProfile {
                     userVM.isEditing = false
                 }
             }
-            .font(.headline)
+            .font(.system(size: 18, weight: .semibold, design: .rounded))
             .foregroundColor(.white)
             .padding()
             .frame(maxWidth: .infinity)
             .background(LinearGradient(gradient: Gradient(colors: [.green, .blue]), startPoint: .leading, endPoint: .trailing))
-            .cornerRadius(15)
-            .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+            .cornerRadius(25)
+            .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
             .padding(.horizontal, 20)
         }
     }
@@ -338,6 +352,7 @@ struct ProfileView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "person.fill")
                         .foregroundColor(.blue)
+                        .frame(width: 20) // Icon thẳng hàng
                     Text(user.name)
                         .font(.title2)
                         .fontWeight(.bold)
@@ -345,102 +360,120 @@ struct ProfileView: View {
                 }
                 HStack(spacing: 12) {
                     Image(systemName: "envelope.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.teal)
+                        .frame(width: 20) // Icon thẳng hàng
                     Text(user.email)
                         .font(.subheadline)
                         .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                 }
                 HStack(spacing: 12) {
                     Image(systemName: "lock.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.mint)
+                        .frame(width: 20) // Icon thẳng hàng
                     Text("••••••••")
                         .font(.subheadline)
                         .foregroundColor(.gray)
+                        .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                 }
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(15)
-            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
 
             VStack(spacing: 15) {
                 if let description = user.description {
                     HStack(spacing: 12) {
                         Image(systemName: "text.quote")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.cyan)
+                            .frame(width: 20) // Icon thẳng hàng
                         Text(description)
                             .font(.subheadline)
                             .foregroundColor(.primary)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                     }
                 }
                 if let dateOfBirth = user.dateOfBirth {
                     HStack(spacing: 12) {
                         Image(systemName: "calendar")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.yellow)
+                            .frame(width: 20) // Icon thẳng hàng
                         Text("Ngày sinh: \(dateOfBirth, formatter: dateFormatter)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                     }
                 }
                 if let location = user.location {
                     HStack(spacing: 12) {
                         Image(systemName: "location.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.green)
+                            .frame(width: 20) // Icon thẳng hàng
                         Text("Địa điểm: \(location)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                     }
                 }
                 if let joinedDate = user.joinedDate {
                     HStack(spacing: 12) {
                         Image(systemName: "clock.fill")
                             .foregroundColor(.blue)
+                            .frame(width: 20) // Icon thẳng hàng
                         Text("Tham gia: \(joinedDate, formatter: dateFormatter)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                     }
                 }
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(15)
-            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
 
             VStack(spacing: 15) {
                 if let gender = user.gender {
                     HStack(spacing: 12) {
                         Image(systemName: "person.2.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.pink)
+                            .frame(width: 20) // Icon thẳng hàng
                         Text("Giới tính: \(gender)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                     }
                 }
                 if let hobbies = user.hobbies {
                     HStack(spacing: 12) {
                         Image(systemName: "heart.fill")
-                            .foregroundColor(.blue)
+                            .foregroundColor(.red)
+                            .frame(width: 20) // Icon thẳng hàng
                         Text("Sở thích: \(hobbies)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                     }
                 }
                 if let bio = user.bio {
                     HStack(spacing: 12) {
                         Image(systemName: "info.circle.fill")
                             .foregroundColor(.blue)
+                            .frame(width: 20) // Icon thẳng hàng
                         Text("Giới thiệu: \(bio)")
                             .font(.subheadline)
                             .foregroundColor(.gray)
+                            .frame(maxWidth: .infinity, alignment: .leading) // Canh trái
                     }
                 }
             }
             .padding()
             .background(Color(.systemBackground))
             .cornerRadius(15)
-            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
         }
     }
@@ -451,47 +484,47 @@ struct ProfileView: View {
             Button(action: {
                 userVM.isLoggingOut = true
             }) {
-                Text("Đăng Xuất")
-                    .font(.headline)
+                Text("Đăng Xuất ✦")
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
                     .background(LinearGradient(gradient: Gradient(colors: [.red, .orange]), startPoint: .leading, endPoint: .trailing))
-                    .cornerRadius(15)
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                    .cornerRadius(50)
+                    .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
             }
-            .alert("Xác nhận", isPresented: $userVM.isLoggingOut) {
-                Button("Đăng xuất", role: .destructive) {
+            .alert("Xác nhận (｡Ó﹏Ò｡)", isPresented: $userVM.isLoggingOut) {
+                Button("Đăng xuất (つ╥﹏╥)つ", role: .destructive) {
                     userVM.logout(authVM: authVM) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
-                Button("Hủy", role: .cancel) { userVM.isLoggingOut = false }
+                Button("Hủy (✿ᴗ͈ˬᴗ͈)⁾⁾", role: .cancel) { userVM.isLoggingOut = false }
             } message: {
-                Text("Bạn có chắc muốn đăng xuất?")
+                Text("Bạn có chắc muốn đăng xuất? ⟢")
             }
 
             Button(action: {
                 userVM.isDeletingAccount = true
             }) {
-                Text("Xóa Tài Khoản")
-                    .font(.headline)
+                Text("Xóa Tài Khoản ✿")
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.white)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(LinearGradient(gradient: Gradient(colors: [.gray, .black]), startPoint: .leading, endPoint: .trailing))
-                    .cornerRadius(15)
-                    .shadow(color: Color.black.opacity(0.2), radius: 5, x: 0, y: 2)
+                    .background(LinearGradient(gradient: Gradient(colors: [.red, .pink]), startPoint: .leading, endPoint: .trailing))
+                    .cornerRadius(50)
+                    .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
             }
-            .alert("Xác nhận", isPresented: $userVM.isDeletingAccount) {
-                Button("Xóa", role: .destructive) {
+            .alert("Xác nhận (｡•́︿•̀｡)", isPresented: $userVM.isDeletingAccount) {
+                Button("Xóa (இ﹏இ`｡)", role: .destructive) {
                     userVM.deleteAccount(authVM: authVM) {
                         presentationMode.wrappedValue.dismiss()
                     }
                 }
-                Button("Hủy", role: .cancel) { userVM.isDeletingAccount = false }
+                Button("Hủy (✿´꒳`)ﾉ", role: .cancel) { userVM.isDeletingAccount = false }
             } message: {
-                Text("Bạn có chắc muốn xóa tài khoản? Hành động này không thể hoàn tác.")
+                Text("Bạn có chắc muốn xóa tài khoản? Hành động này không thể hoàn tác. ⟢")
             }
         }
         .padding(.horizontal, 20)

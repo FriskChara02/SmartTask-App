@@ -73,7 +73,7 @@ struct TaskListView: View {
                 .opacity(taskVM.isRefreshing ? 0 : 1) // Task mờ dần khi refreshing
                 .animation(.easeInOut(duration: 0.5), value: taskVM.isRefreshing) // Hiệu ứng 0.5s
             }
-            .navigationTitle("Danh sách công việc")
+            .navigationTitle("Danh sách công việc ✦")
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     HStack {
@@ -112,7 +112,7 @@ struct TaskListView: View {
     private var pendingTasksSection: some View {
         Group {
             if !pendingTasks.isEmpty {
-                SectionHeaderView(title: "Công việc chưa hoàn thành")
+                SectionHeaderView(title: "Công việc chưa hoàn thành ❅")
                 ForEach(pendingTasks) { task in
                     NavigationLink(destination: TaskDetailView(task: task)) {
                         TaskRowView(task: task) {
@@ -128,7 +128,7 @@ struct TaskListView: View {
     private var completedTasksSection: some View {
         Group {
             if !completedTasks.isEmpty {
-                SectionHeaderView(title: "Đã hoàn thành")
+                SectionHeaderView(title: "Đã hoàn thành ❀")
                 ForEach(completedTasks) { task in
                     NavigationLink(destination: TaskDetailView(task: task)) {
                         TaskRowView(task: task) {

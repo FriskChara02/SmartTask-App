@@ -20,7 +20,7 @@ struct LoginView: View {
                     .environmentObject(authVM) // Thêm authVM để HomeView dùng
             } else {
                 VStack {
-                    Text("Đăng Nhập").font(.largeTitle).bold()
+                    Text("Đăng Nhập ❀").font(.largeTitle).bold()
 
                     TextField("Email", text: $email)
                         .textFieldStyle(RoundedBorderTextFieldStyle())

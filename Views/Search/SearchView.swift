@@ -74,7 +74,7 @@ struct SearchView: View {
                 .animation(.easeInOut(duration: 0.5), value: filteredTasks)
             }
             .background(Color(.systemBackground).ignoresSafeArea())
-            .navigationTitle("Search")
+            .navigationTitle("Search ✿")
             .navigationBarItems(leading: Button(action: { dismiss() }) {
                 Image(systemName: "chevron.left")
                     .foregroundColor(.blue)

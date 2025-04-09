@@ -20,6 +20,7 @@ struct SmartTaskApp: App {
     @StateObject private var categoryVM = CategoryViewModel()
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var userVM = UserViewModel()
+    @StateObject private var eventVM = EventViewModel()
     
     @AppStorage("themeColor") private var themeColor: String = "Blue" // Thêm AppStorage
     
@@ -45,6 +46,7 @@ struct SmartTaskApp: App {
                 .environmentObject(notificationsVM)
                 .environmentObject(userVM)
                 .environment(\.themeColor, selectedThemeColor)
+                .environmentObject(eventVM)
         }
     }
 }

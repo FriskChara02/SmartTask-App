@@ -44,7 +44,7 @@ struct HamburgerMenuView: View {
                     NavigationView { // Thêm NavigationView bao quanh List
                         List {
                             // Section 1: Tasks
-                            Section(header: Text("Tasks").font(.headline).foregroundColor(themeColor)) {
+                            Section(header: Text("Tasks ❀").font(.headline).foregroundColor(themeColor)) {
                                 MenuItem(icon: "star.fill", title: "Favorite Tasks", destination: EmptyViewWithText(text: "Favorite Tasks - Chưa triển khai"), color: .yellow)
                                 MenuItem(icon: "target", title: "Habits", destination: EmptyViewWithText(text: "Habits - Chưa triển khai"), color: .green)
                                 
@@ -71,7 +71,7 @@ struct HamburgerMenuView: View {
                             
                             // Section ẩn: Categories
                             if isCategoryExpanded {
-                                Section(header: Text("Categories").font(.headline).foregroundColor(themeColor)) {
+                                Section(header: Text("Categories ✦").font(.headline).foregroundColor(themeColor)) {
                                     
                                     // Danh sách categories
                                     if categoryVM.categories.isEmpty {
@@ -118,7 +118,7 @@ struct HamburgerMenuView: View {
                             }
                             
                             // Section 2: Options
-                            Section(header: Text("Options").font(.headline).foregroundColor(themeColor)) {
+                            Section(header: Text("Options ✿").font(.headline).foregroundColor(themeColor)) {
                                 MenuItem(icon: "paintpalette.fill", title: "Theme", destination: ThemeView(), color: .purple)
                                 MenuItem(icon: "rectangle.3.offgrid.fill", title: "Widget", destination: EmptyViewWithText(text: "Widget - Chưa triển khai"), color: .orange)
                                 MenuItem(icon: "square.and.arrow.up.fill", title: "Share App", destination: ShareAppView(), color: .pink)

@@ -20,14 +20,14 @@ struct TaskDetailView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Thông tin công việc").font(.headline)) {
+                Section(header: Text("Thông tin công việc ❀").font(.headline)) {
                     TextField("Tiêu đề", text: $title)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     TextField("Mô tả", text: $description)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
                 
-                Section(header: Text("Hạn chót").font(.headline)) {
+                Section(header: Text("Hạn chót ᝰ.ᐟ").font(.headline)) {
                     DatePicker("Chọn ngày giờ", selection: Binding(
                         get: { dueDate ?? Date() },
                         set: { dueDate = $0 }
@@ -35,7 +35,7 @@ struct TaskDetailView: View {
                     .datePickerStyle(CompactDatePickerStyle())
                 }
                 
-                Section(header: Text("Mức độ ưu tiên").font(.headline)) {
+                Section(header: Text("Mức độ ưu tiên °❀⋆.ೃ࿔*:･°❀⋆.ೃ࿔*:･").font(.headline)) {
                     Picker("Ưu tiên", selection: $priority) {
                         Text("Thấp").tag("Low")
                         Text("Trung bình").tag("Medium")
@@ -48,30 +48,34 @@ struct TaskDetailView: View {
                     Button(action: {
                         updateTask()
                     }) {
-                        Text("Lưu thay đổi")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
+                        Text("Lưu thay đổi ᯓ✦")
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(LinearGradient(gradient: Gradient(colors: [.green, .teal]), startPoint: .leading, endPoint: .trailing))
+                            .cornerRadius(12)
+                            .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
                     }
                     
                     Button(action: {
                         deleteTask()
                     }) {
-                        Text("Xóa công việc")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.red.opacity(0.8))
+                        Text("Xóa công việc ✘")
+                            .font(.system(size: 18, weight: .semibold, design: .rounded))
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(LinearGradient(gradient: Gradient(colors: [.red, .orange]), startPoint: .leading, endPoint: .trailing))
+                            .cornerRadius(12)
+                            .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
                     }
                 }
             }
-            .navigationTitle("Chỉnh sửa công việc")
+            .navigationTitle("Chỉnh sửa công việc ✦")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Hủy") { dismiss() }
+                    Button("Hủy ₊⊹") { dismiss() }
                 }
             }
         }

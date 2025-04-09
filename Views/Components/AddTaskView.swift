@@ -18,10 +18,10 @@ struct AddTaskView: View {
                 prioritySection
                 saveButtonSection
             }
-            .navigationTitle("Thêm công việc")
+            .navigationTitle("Thêm công việc ❅")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Hủy") { dismiss() }
+                    Button("Hủy ₊⊹") { dismiss() }
                 }
             }
             .onAppear {
@@ -36,7 +36,7 @@ struct AddTaskView: View {
     
     // Sub-view cho phần "Thông tin công việc"
     private var taskInfoSection: some View {
-        Section(header: Text("Thông tin công việc")) {
+        Section(header: Text("Thông tin công việc ❄︎")) {
             TextField("Tiêu đề", text: $title)
             TextField("Mô tả", text: $description)
             
@@ -56,7 +56,7 @@ struct AddTaskView: View {
     
     // Sub-view cho phần "Mức độ ưu tiên"
     private var prioritySection: some View {
-        Section(header: Text("Mức độ ưu tiên")) {
+        Section(header: Text("Mức độ ưu tiên ⋆꙳•̩̩͙❅*̩̩͙‧͙ ‧͙*̩̩͙❆ ͙͛ ˚₊⋆")) {
             Picker("Mức độ ưu tiên", selection: $priority) {
                 Text("Thấp").tag("Low")
                 Text("Trung bình").tag("Medium")
@@ -70,12 +70,14 @@ struct AddTaskView: View {
     private var saveButtonSection: some View {
         Section {
             Button(action: addTask) {
-                Text("Lưu công việc")
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.green)
+                Text("Lưu công việc ᯓ✦")
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
                     .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(LinearGradient(gradient: Gradient(colors: [.green, .teal]), startPoint: .leading, endPoint: .trailing))
+                    .cornerRadius(12)
+                    .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
             }
             .disabled(title.isEmpty || selectedCategoryId == nil)
         }

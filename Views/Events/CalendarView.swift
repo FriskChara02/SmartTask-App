@@ -121,14 +121,14 @@ struct CalendarView: View {
             Button(action: {
                 showDatePicker = true // Hiển thị DatePicker khi nhấn
             }) {
-                Text(" \(dateHelper.formatDate(currentMonth, format: "MMM, yyyy")) ")
+                Text(" \(dateHelper.formatDate(currentMonth, format: "MMM, yyyy"))")
                     .font(.title2)
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
                     .padding(.vertical, 8)
                     .padding(.horizontal, 16)
                     .background(Color(.systemBackground).opacity(0.9))
-                    .cornerRadius(12)
+                    .cornerRadius(15)
                     .shadow(radius: 3)
             }
             .sheet(isPresented: $showDatePicker) {
@@ -388,7 +388,7 @@ struct CalendarView: View {
                 .padding(.top, 5)
             
             if tasksForSelectedDay.isEmpty {
-                Text("Không có task nào hôm nay")
+                Text("Không có task nào hôm nay ❀")
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
                     .padding(.horizontal)

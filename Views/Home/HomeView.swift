@@ -7,6 +7,7 @@ struct HomeView: View {
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var taskVM: TaskViewModel // Thêm taskVM
     @EnvironmentObject var userVM: UserViewModel
+    @EnvironmentObject var eventVM: EventViewModel
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -24,18 +25,24 @@ struct HomeView: View {
                     Label("Lịch", systemImage: "calendar")
                 }
                 .tag(1)
+            
+            EventsView()
+                .tabItem {
+                    Label("Sự kiện", systemImage: "cloud.sun.bolt")
+                }
+                .tag(2)
 
             SettingsView()
                 .tabItem {
                     Label("Cài đặt", systemImage: "gear")
                 }
-                .tag(2)
+                .tag(3)
 
             ProfileView()
                 .tabItem {
                     Label("Hồ sơ", systemImage: "person.fill")
                 }
-                .tag(3)
+                .tag(4)
         }
         .accentColor(.green)
     }
@@ -45,6 +52,7 @@ struct HomeView: View {
     let notificationsVM = NotificationsViewModel()
     let taskVM = TaskViewModel(notificationsVM: notificationsVM)
     let userVM = UserViewModel()
+    let eventVM = EventViewModel()
     
     HomeView()
         .environmentObject(taskVM)
@@ -52,4 +60,5 @@ struct HomeView: View {
         .environmentObject(CategoryViewModel())
         .environmentObject(notificationsVM)
         .environmentObject(userVM)
+        .environmentObject(eventVM)
 }
