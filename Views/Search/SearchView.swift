@@ -138,7 +138,7 @@ struct TaskSearchRow: View {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     let categoryVM = CategoryViewModel()
     taskVM.tasks = [
         TaskModel(id: 1, userId: 1, title: "Học SwiftUI", description: "Làm bài tập", categoryId: 1, dueDate: Date(), isCompleted: false, createdAt: Date(), priority: "High"),

@@ -107,7 +107,7 @@ struct AddTaskView: View {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     AddTaskView()
         .environmentObject(taskVM)
         .environmentObject(CategoryViewModel())

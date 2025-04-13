@@ -3,7 +3,7 @@ import SwiftUI
 struct ThemeView: View {
     @Environment(\.colorScheme) var colorScheme
     @AppStorage("isDarkMode") private var isDarkMode: Bool = false // Thay @State bằng @AppStorage để lưu lâu dài
-    @AppStorage("themeColor") private var themeColor: String = "Blue" //Lưu tên màu mặc định
+    @AppStorage("themeColor") private var themeColor: String = "Blue" // Lưu tên màu mặc định
     @Environment(\.themeColor) var selectedThemeColor
     
     let colors: [(name: String, color: Color)] = [
@@ -21,20 +21,14 @@ struct ThemeView: View {
     var body: some View {
         NavigationView {
             List {
-                //Darkmode
+                // Darkmode
                 Section(header: Text("Appearance").font(.headline)) {
                     Toggle(isOn: $isDarkMode) {
                         Text("Dark Mode").font(.body)
                     }
-                    //Giao diện chuyển sang Darkmode hoặc Lightmode
-                    .onChange(of: isDarkMode) { _, newValue in
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                            windowScene.windows.first?.overrideUserInterfaceStyle = newValue ? .dark : .light
-                        }
-                    }
                 }
                 
-                //Pure Color
+                // Pure Color
                 Section(header: Text("Pure Color").font(.headline)) {
                     ForEach(colors, id: \.name) { color in
                         HStack {
@@ -50,7 +44,7 @@ struct ThemeView: View {
                             }
                             Text(color.name)
                             Spacer()
-                            if themeColor == color.name { //So sánh với ThemeColor
+                            if themeColor == color.name { // So sánh với ThemeColor
                                 Image(systemName: "checkmark")
                                     .foregroundColor(.blue)
                             }
@@ -77,12 +71,6 @@ struct ThemeView: View {
             .navigationTitle("Theme")
             .background(selectedThemeColor.opacity(0.5)) // Dùng trực tiếp từ Environment
         }
-        .onAppear {
-            //Đồng bộ với trạng thái Dark Mode ban đầu
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                windowScene.windows.first?.overrideUserInterfaceStyle = isDarkMode ? .dark : .light
-            }
-        }
     }
 }
 
@@ -90,5 +78,6 @@ struct ThemeView: View {
     // Cung cấp NavigationStack để Preview không crash
     NavigationStack {
         ThemeView()
+            .environment(\.themeColor, .blue)
     }
 }

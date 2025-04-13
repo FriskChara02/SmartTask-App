@@ -33,7 +33,7 @@ struct EditCategoryView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Category Name")) {
+                Section(header: Text("Category Name (˶˃⤙˂˶)")) {
                     TextField("Name", text: $name)
                 }
                 
@@ -86,7 +86,7 @@ struct EditCategoryView: View {
                 }
                 .animation(.easeInOut, value: showTooltip)
                 
-                Section(header: Text("Icon")) {
+                Section(header: Text("Icon ⋆꙳•❅*°⋆❆.ೃ࿔*:･*❆ ₊⋆")) {
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: 10) {
                             // Hàng 1
@@ -153,7 +153,7 @@ struct EditCategoryView: View {
                     .frame(maxHeight: 200) // Giới hạn chiều cao để cuộn nếu cần
                 }
             }
-            .navigationTitle("Edit Category")
+            .navigationTitle("Edit Category ❅")
             .navigationBarItems(
                 leading: Button("Cancel") { dismiss() }.foregroundColor(.red),
                 trailing: Button("Save") {

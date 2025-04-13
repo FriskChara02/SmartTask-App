@@ -8,37 +8,40 @@ struct ContentView: View {
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var userVM: UserViewModel
     @EnvironmentObject var eventVM: EventViewModel
-
+    @AppStorage("isDarkMode") private var isDarkMode: Bool = false
 
     var body: some View {
-        if authVM.isAuthenticated {
-            HomeView()
-                .environmentObject(taskVM)
-                .environmentObject(categoryVM)
-                .environmentObject(notificationManager)
-                .environmentObject(notificationsVM)
-                .environmentObject(userVM)
-                .environmentObject(eventVM)
-        } else {
-            LoginView()
+        Group {
+            if authVM.isAuthenticated {
+                HomeView()
+                    .environmentObject(taskVM)
+                    .environmentObject(categoryVM)
+                    .environmentObject(notificationManager)
+                    .environmentObject(notificationsVM)
+                    .environmentObject(userVM)
+                    .environmentObject(eventVM)
+            } else {
+                LoginView()
+            }
         }
+        .preferredColorScheme(isDarkMode ? .dark : .light)
     }
 }
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     let categoryVM = CategoryViewModel()
     let notificationManager = NotificationManager()
     let userVM = UserViewModel()
     let eventVM = EventViewModel()
+    let authVM = AuthViewModel()
     return ContentView()
-        .environmentObject(AuthViewModel())
+        .environmentObject(authVM)
         .environmentObject(taskVM)
         .environmentObject(categoryVM)
         .environmentObject(notificationManager)
         .environmentObject(notificationsVM)
-        .environmentObject(CategoryViewModel())
         .environmentObject(userVM)
         .environmentObject(eventVM)
 }

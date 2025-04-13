@@ -154,7 +154,7 @@ private struct TopAppBarPreview: View {
     init(showMenu: Binding<Bool>, selectedTab: Binding<String>) { // Thêm init để nhận Binding
         self._showMenu = showMenu
         self._selectedTab = selectedTab
-        taskVM = TaskViewModel(notificationsVM: notificationsVM)
+        taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
         taskVM.tasks = [
             TaskModel(id: 1, userId: 1, title: "Học SwiftUI", description: "Làm bài tập", categoryId: 1, dueDate: Date(), isCompleted: false, createdAt: Date(), priority: "High"),
             TaskModel(id: 2, userId: 1, title: "Mua quà", description: "Sinh nhật", categoryId: 2, dueDate: nil, isCompleted: true, createdAt: Date().addingTimeInterval(-86400), priority: "Medium")

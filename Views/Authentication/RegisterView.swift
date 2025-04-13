@@ -73,7 +73,7 @@ struct RegisterView: View {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     let authVM = AuthViewModel()
     let userVM = UserViewModel()
     
@@ -83,5 +83,4 @@ struct RegisterView: View {
         .environmentObject(authVM)
         .environmentObject(notificationsVM) // Thêm để đồng bộ
         .environmentObject(userVM)
-        
 }

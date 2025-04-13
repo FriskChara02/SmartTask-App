@@ -1,9 +1,11 @@
 import Foundation
+import Combine
 
 class AuthViewModel: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: UserModel?
     @Published var isLoggedIn: Bool = true
+    var cancellables = Set<AnyCancellable>()
 
     // 🟢 Hàm đăng ký
     func register(name: String, email: String, password: String, completion: @escaping (String) -> Void) {

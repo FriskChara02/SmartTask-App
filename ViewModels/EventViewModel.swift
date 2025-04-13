@@ -48,8 +48,9 @@ class EventViewModel: ObservableObject {
     
     // Thêm sự kiện mới
     func addEvent(event: EventModel) {
-        if checkForConflicts(with: event) {
-            conflictMessage = "Sự kiện '\(event.title)' bị trùng lịch với một sự kiện khác."
+        let (hasConflict, conflictingEventTitle) = checkForConflicts(with: event)
+        if hasConflict {
+            conflictMessage = "Lịch của bạn đã bị trùng bởi lịch '\(conflictingEventTitle ?? "không xác định")'."
             print("❌ Xung đột lịch: \(event.title)")
             return
         }
@@ -62,17 +63,24 @@ class EventViewModel: ObservableObject {
         request.timeoutInterval = 10
         
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+        encoder.dateEncodingStrategy = .formatted({
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            formatter.timeZone = TimeZone(identifier: "Asia/Ho_Chi_Minh")
+            return formatter
+        }())
         do {
             let body = try encoder.encode(event)
             request.httpBody = body
             print("📤 Payload: \(String(data: body, encoding: .utf8) ?? "Không encode được")")
         } catch {
+            print("❌ Lỗi encode: \(error)")
             return
         }
         
         URLSession.shared.dataTask(with: request) { data, response, _ in
             guard let data = data, let responseString = String(data: data, encoding: .utf8) else {
+                print("❌ Không nhận được dữ liệu từ server")
                 return
             }
             print("📥 Response: \(responseString)")
@@ -114,12 +122,18 @@ class EventViewModel: ObservableObject {
         request.timeoutInterval = 10
         
         let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
+        encoder.dateEncodingStrategy = .formatted({
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+            formatter.timeZone = TimeZone(identifier: "Asia/Ho_Chi_Minh") // Đồng bộ với server
+            return formatter
+        }())
         do {
             let body = try encoder.encode(event)
             request.httpBody = body
             print("📤 Payload: \(String(data: body, encoding: .utf8) ?? "Không encode được")")
         } catch {
+            print("❌ Lỗi encode: \(error)")
             return
         }
         
@@ -225,16 +239,16 @@ class EventViewModel: ObservableObject {
     }
     
     // Kiểm tra xung đột lịch
-    private func checkForConflicts(with newEvent: EventModel) -> Bool {
+    private func checkForConflicts(with newEvent: EventModel) -> (Bool, String?) {
         for event in events {
-            if event.id == newEvent.id { continue } // Bỏ qua chính nó nếu là cập nhật
+            if event.id == newEvent.id { continue }
             let existingRange = event.startDate...(event.endDate ?? event.startDate)
             let newRange = newEvent.startDate...(newEvent.endDate ?? newEvent.startDate)
             if existingRange.overlaps(newRange) {
-                return true
+                return (true, event.title)
             }
         }
-        return false
+        return (false, nil)
     }
     
     // Lên lịch nhiều mốc nhắc nhở
@@ -254,6 +268,7 @@ class EventViewModel: ObservableObject {
     func fetchEvents(forUserId userId: Int) {
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        dateFormatter.timeZone = TimeZone(identifier: "Asia/Ho_Chi_Minh")
         
         let url = URL(string: "\(baseURL)get_events.php?user_id=\(userId)")!
         print("📡 Gửi GET: \(url.absoluteString)")
@@ -274,6 +289,7 @@ class EventViewModel: ObservableObject {
                     print("✅ Đã tải \(events.count) events")
                 }
             } catch {
+                print("❌ Lỗi decode events: \(error)")
                 return
             }
         }.resume()
@@ -298,6 +314,7 @@ class EventViewModel: ObservableObject {
                     print("✅ Đã tải \(completed.count) completed events")
                 }
             } catch {
+                print("❌ Lỗi decode completed events: \(error)")
                 return
             }
         }.resume()

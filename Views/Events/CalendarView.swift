@@ -81,7 +81,7 @@ struct CalendarView: View {
                         }
                     })
                     .opacity(0.60) // Nhạt
-                    .padding(.bottom, 20)
+                    .padding(.bottom, 10)
                 }
             }
             .sheet(isPresented: $showAddTaskView) {

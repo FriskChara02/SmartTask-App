@@ -2,6 +2,7 @@ import SwiftUI
 
 struct EventsView: View {
     @EnvironmentObject var eventVM: EventViewModel
+    @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.themeColor) var themeColor
     
@@ -24,7 +25,6 @@ struct EventsView: View {
         EventModel(id: 1008, userId: 0, title: "Ngày Nhà giáo Việt Nam", description: "Ngày 20/11", startDate: createDate(year: 2025, month: 11, day: 20), endDate: nil, priority: "Medium", isAllDay: true, createdAt: Date(), updatedAt: Date()),
         EventModel(id: 1009, userId: 0, title: "Ngày Phụ nữ Việt Nam", description: "Ngày 20/10", startDate: createDate(year: 2025, month: 10, day: 20), endDate: nil, priority: "Medium", isAllDay: true, createdAt: Date(), updatedAt: Date())
     ]
-
     
     var body: some View {
         NavigationView {
@@ -161,13 +161,16 @@ struct EventsView: View {
             .sheet(isPresented: $showingAddEvent) {
                 AddEventView()
                     .environmentObject(eventVM)
+                    .environmentObject(authVM) // Truyền authVM để lấy userId
             }
             .sheet(item: $selectedEvent) { event in
                 EventDetailView(event: event)
                     .environmentObject(eventVM)
             }
             .onAppear {
-                eventVM.fetchEvents(forUserId: 1)
+                if let userId = authVM.currentUser?.id {
+                    eventVM.fetchEvents(forUserId: userId)
+                }
             }
             .alert(isPresented: $showConflictAlert) {
                 Alert(
@@ -190,7 +193,6 @@ struct EventsView: View {
         }
     }
     
-    // Helper để tạo ngày lễ
     private static func createDate(year: Int, month: Int, day: Int) -> Date {
         var components = DateComponents()
         components.year = year
@@ -243,9 +245,9 @@ struct EventCard: View {
     }
 }
 
-// MARK: - Add Event View
 struct AddEventView: View {
     @EnvironmentObject var eventVM: EventViewModel
+    @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.themeColor) var themeColor
     
@@ -255,6 +257,7 @@ struct AddEventView: View {
     @State private var endDate: Date?
     @State private var priority = "Medium"
     @State private var isAllDay = false
+    @State private var showConflictAlert = false
     
     var body: some View {
         NavigationView {
@@ -312,9 +315,13 @@ struct AddEventView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
+                        guard let userId = authVM.currentUser?.id else {
+                            print("❌ Không tìm thấy userId")
+                            return
+                        }
                         let newEvent = EventModel(
                             id: Int.random(in: 1000...9999),
-                            userId: 1,
+                            userId: userId,
                             title: title,
                             description: description.isEmpty ? nil : description,
                             startDate: startDate,
@@ -350,8 +357,20 @@ struct AddEventView: View {
             .onReceive(NotificationCenter.default.publisher(for: .dismissAddEvent)) { _ in
                 dismiss()
             }
+            .alert(isPresented: $showConflictAlert) {
+                Alert(
+                    title: Text("Xung đột lịch ✧.*"),
+                    message: Text(eventVM.conflictMessage ?? "Có lỗi xảy ra"),
+                    dismissButton: .default(Text("OK •ᴗ•")) {
+                        eventVM.conflictMessage = nil // Xóa thông báo sau khi nhấn OK
+                    }
+                )
+            }
+            .onChange(of: eventVM.conflictMessage) { _, newValue in
+                showConflictAlert = newValue != nil
+            }
+        }
     }
-}
 }
 
 private let dateFormatter: DateFormatter = {
@@ -362,6 +381,10 @@ private let dateFormatter: DateFormatter = {
 }()
 
 #Preview {
-    EventsView()
-        .environmentObject(EventViewModel())
+    let eventVM = EventViewModel()
+    let authVM = AuthViewModel()
+    authVM.currentUser = UserModel(id: 7, name: "Tester01", email: "Test01", password: "123", avatarURL: nil, description: "I’m still newbie.", dateOfBirth: Date(), location: "Cat Islands", joinedDate: nil, gender: "Nam", hobbies: "Love Cats", bio: "Halo")
+    return EventsView()
+        .environmentObject(eventVM)
+        .environmentObject(authVM)
 }

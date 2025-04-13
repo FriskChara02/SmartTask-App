@@ -98,7 +98,7 @@ struct TaskDetailView: View {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     
     TaskDetailView(task: TaskModel(
         id: 1,

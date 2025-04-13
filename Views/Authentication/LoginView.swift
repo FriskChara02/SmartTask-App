@@ -85,7 +85,7 @@ struct AnyCodable: Decodable {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     let authVM = AuthViewModel()
     let userVM = UserViewModel()
     

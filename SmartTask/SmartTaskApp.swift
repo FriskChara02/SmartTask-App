@@ -1,6 +1,5 @@
 import SwiftUI
 
-//EnvironmentKey cho themeColor
 private struct ThemeColorKey: EnvironmentKey {
     static let defaultValue: Color = .blue
 }
@@ -16,7 +15,7 @@ extension EnvironmentValues {
 struct SmartTaskApp: App {
     @StateObject private var authVM = AuthViewModel()  // ✅ Quản lý trạng thái đăng nhập
     @StateObject private var notificationsVM = NotificationsViewModel() // Khai báo trước
-    @StateObject private var taskVM = TaskViewModel(notificationsVM: NotificationsViewModel()) // Khởi tạo trực tiếp
+    @StateObject private var taskVM = TaskViewModel(notificationsVM: NotificationsViewModel(), userId: nil) // Khởi tạo với userId ban đầu là nil
     @StateObject private var categoryVM = CategoryViewModel()
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var userVM = UserViewModel()
@@ -25,16 +24,16 @@ struct SmartTaskApp: App {
     @AppStorage("themeColor") private var themeColor: String = "Blue" // Thêm AppStorage
     
     // Danh sách màu để ánh xạ từ themeColor
-        private let colors: [(name: String, color: Color)] = [
-            ("Default", .gray),
-            ("Blue", .blue), ("Green", .green), ("Pink", .pink), ("Purple", .purple),
-            ("Red", .red), ("Black", .black), ("Yellow", .yellow), ("Orange", .orange)
-        ]
-        
-        // Tính toán màu từ themeColor
-        private var selectedThemeColor: Color {
-            colors.first(where: { $0.name == themeColor })?.color ?? .blue // Mặc định là .blue nếu không tìm thấy
-        }
+    private let colors: [(name: String, color: Color)] = [
+        ("Default", .gray),
+        ("Blue", .blue), ("Green", .green), ("Pink", .pink), ("Purple", .purple),
+        ("Red", .red), ("Black", .black), ("Yellow", .yellow), ("Orange", .orange)
+    ]
+    
+    // Tính toán màu từ themeColor
+    private var selectedThemeColor: Color {
+        colors.first(where: { $0.name == themeColor })?.color ?? .blue // Mặc định là .blue nếu không tìm thấy
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -47,6 +46,12 @@ struct SmartTaskApp: App {
                 .environmentObject(userVM)
                 .environment(\.themeColor, selectedThemeColor)
                 .environmentObject(eventVM)
+                .onChange(of: authVM.currentUser) {
+                    if let userId = authVM.currentUser?.id {
+                        taskVM.userId = userId
+                        taskVM.fetchTasks() // Gọi fetchTasks sau khi userId được cập nhật
+                    }
+                }
         }
     }
 }

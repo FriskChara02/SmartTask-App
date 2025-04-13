@@ -29,7 +29,7 @@ struct TaskListView: View {
                     isAddingTask.toggle()
                 }
                 .opacity(1.0) // Không mờ
-                .padding(.bottom, 20)
+                .padding(.bottom, 10)
             }
         }
         .sheet(isPresented: $isAddingTask) {
@@ -163,7 +163,7 @@ struct TaskListView: View {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 1) // Giả định userId
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7) // Giả định userId
     
     TaskListView()
         .environmentObject(taskVM)

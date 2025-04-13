@@ -197,7 +197,7 @@ struct EmptyViewWithText: View {
         let categoryVM = CategoryViewModel()
         
         init() {
-            taskVM = TaskViewModel(notificationsVM: notificationsVM)
+            taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
             categoryVM.categories = [
                 Category(id: 1, name: "Work", isHidden: false, color: "blue", icon: "star"),
                 Category(id: 2, name: "Birthday", isHidden: false, color: "pink", icon: "gift.fill")

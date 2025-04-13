@@ -284,7 +284,7 @@ struct FAQView: View {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     let authVM = AuthViewModel()
     let categoryVM = CategoryViewModel()
     let userVM = UserViewModel(authVM: authVM)

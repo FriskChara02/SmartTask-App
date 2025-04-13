@@ -109,7 +109,7 @@ private struct TaskRowPreview: View {
     let categoryVM = CategoryViewModel()
 
     init() {
-        taskVM = TaskViewModel(notificationsVM: notificationsVM)
+        taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
         taskVM.tasks = [
             TaskModel(
                 id: 1,

@@ -24,7 +24,7 @@ struct ManageCategoriesView: View {
                 HStack {
                     backButton
                     Spacer() // Thêm Spacer bên trái
-                    Text("Manage Categories")
+                    Text("Manage Categories ❀")
                         .font(.title)
                         .fontWeight(.bold)
                     Spacer() // Thêm Spacer bên phải
@@ -44,7 +44,7 @@ struct ManageCategoriesView: View {
     }
     
     private var headerText: some View {
-        Text("Categories display on homepage")
+        Text("Categories display on homepage ⟡")
             .font(.subheadline)
             .foregroundColor(.gray)
             .frame(maxWidth: .infinity, alignment: .center)
@@ -152,7 +152,7 @@ struct ManageCategoriesView: View {
 
 #Preview {
     let notificationsVM = NotificationsViewModel()
-    let taskVM = TaskViewModel(notificationsVM: notificationsVM)
+    let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     ManageCategoriesView()
         .environmentObject(taskVM)
         .environmentObject(CategoryViewModel())
