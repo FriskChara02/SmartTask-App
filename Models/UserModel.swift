@@ -13,6 +13,7 @@ struct UserModel: Identifiable, Codable, Equatable {
     var gender: String? // Giới tính
     var hobbies: String? // Sở thích
     var bio: String? // Giới thiệu
+    var token: String?
     
     // Triển khai Equatable: so sánh dựa trên id
     static func == (lhs: UserModel, rhs: UserModel) -> Bool {

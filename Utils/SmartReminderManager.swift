@@ -40,7 +40,7 @@ class SmartReminderManager {
     }
     
     // Xóa các nhắc nhở cũ của sự kiện
-    private func removeExistingReminders(for event: EventModel) {
+    public func removeExistingReminders(for event: EventModel) {
         let reminderIds = [
             "event_\(event.id)_-1440",
             "event_\(event.id)_-60",

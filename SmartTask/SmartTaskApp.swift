@@ -1,5 +1,7 @@
 import SwiftUI
+import AppAuth
 
+// ✅ Định nghĩa EnvironmentKey cho themeColor
 private struct ThemeColorKey: EnvironmentKey {
     static let defaultValue: Color = .blue
 }
@@ -19,7 +21,9 @@ struct SmartTaskApp: App {
     @StateObject private var categoryVM = CategoryViewModel()
     @StateObject private var notificationManager = NotificationManager()
     @StateObject private var userVM = UserViewModel()
-    @StateObject private var eventVM = EventViewModel()
+    @StateObject private var googleAuthVM: GoogleAuthViewModel // ✅ Quản lý trạng thái đăng nhập Google
+    @StateObject private var calendarService = GoogleCalendarService.shared
+    @StateObject private var eventVM: EventViewModel
     
     @AppStorage("themeColor") private var themeColor: String = "Blue" // Thêm AppStorage
     
@@ -34,6 +38,13 @@ struct SmartTaskApp: App {
     private var selectedThemeColor: Color {
         colors.first(where: { $0.name == themeColor })?.color ?? .blue // Mặc định là .blue nếu không tìm thấy
     }
+    
+    // ✅ Khởi tạo thủ công các StateObject phụ thuộc lẫn nhau
+    init() {
+        let googleAuthVM = GoogleAuthViewModel()
+        _googleAuthVM = StateObject(wrappedValue: googleAuthVM)
+        _eventVM = StateObject(wrappedValue: EventViewModel(googleAuthVM: googleAuthVM))
+    }
 
     var body: some Scene {
         WindowGroup {
@@ -46,10 +57,17 @@ struct SmartTaskApp: App {
                 .environmentObject(userVM)
                 .environment(\.themeColor, selectedThemeColor)
                 .environmentObject(eventVM)
+                .environmentObject(googleAuthVM) // ✅ Truyền googleAuthVM
+                .environmentObject(calendarService)
                 .onChange(of: authVM.currentUser) {
                     if let userId = authVM.currentUser?.id {
                         taskVM.userId = userId
                         taskVM.fetchTasks() // Gọi fetchTasks sau khi userId được cập nhật
+                    }
+                }
+                .onOpenURL { url in
+                    if let authFlow = calendarService.currentAuthorizationFlow, authFlow.resumeExternalUserAgentFlow(with: url) {
+                        calendarService.currentAuthorizationFlow = nil
                     }
                 }
         }

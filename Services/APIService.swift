@@ -41,14 +41,19 @@ struct APIService {
         
         URLSession.shared.dataTask(with: request) { data, response, error in
             if let error = error {
+                print("❌ Lỗi kết nối API: \(error.localizedDescription)") // ^^ [NEW] Log để debug
                 completion(false, "Lỗi kết nối API: \(error.localizedDescription)", nil)
                 return
             }
             
             guard let data = data else {
+                print("❌ Không nhận được dữ liệu từ API") // ^^ [NEW] Log để debug
                 completion(false, "Không nhận được dữ liệu từ API!", nil)
                 return
             }
+            
+            let responseString = String(data: data, encoding: .utf8) ?? "Không decode được"
+            print("📥 Login response: \(responseString)") // ^^ [NEW] Log chi tiết response
             
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any] {
@@ -71,16 +76,21 @@ struct APIService {
                             joinedDate: (json["joined_date"] as? String).map { dateFormatter.date(from: $0) } ?? nil,
                             gender: json["gender"] as? String,
                             hobbies: json["hobbies"] as? String,
-                            bio: json["bio"] as? String
+                            bio: json["bio"] as? String,
+                            token: json["token"] as? String // ^^ [FIX] Thêm token
                         )
+                        print("✅ Parsed UserModel: id=\(user.id), email=\(user.email), token=\(user.token ?? "nil")") // ^^ [NEW] Log xác nhận
                         completion(true, message, user)
                     } else {
+                        print("❌ Đăng nhập thất bại: \(message)") // ^^ [NEW] Log để debug
                         completion(false, message, nil)
                     }
                 } else {
+                    print("❌ Phản hồi không phải JSON object") // ^^ [NEW] Log để debug
                     completion(false, "Phản hồi không hợp lệ: Không phải JSON object!", nil)
                 }
             } catch {
+                print("❌ Lỗi parse JSON: \(error.localizedDescription)") // ^^ [NEW] Log để debug
                 completion(false, "Lỗi parse JSON: \(error.localizedDescription)", nil)
             }
         }.resume()

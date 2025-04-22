@@ -1,49 +1,15 @@
 import SwiftUI
+import GoogleSignIn
 
 struct SettingsView: View {
     @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel // ✅ Theo dõi trạng thái Google Calendar
     
     var body: some View {
         NavigationView {
             List {
                 // Section 1: Account
-                Section(header: Text("Account ✿").font(.headline)) {
-                    NavigationLink(destination: ProfileView()) {
-                        HStack(spacing: 15) {
-                            if let avatarURL = authVM.currentUser?.avatarURL, !avatarURL.isEmpty {
-                                AsyncImage(url: URL(string: avatarURL)) { phase in
-                                    if let image = phase.image {
-                                        image
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 50, height: 50)
-                                            .clipShape(Circle())
-                                    } else {
-                                        Image(systemName: "person.circle.fill")
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(width: 50, height: 50)
-                                            .foregroundColor(.gray)
-                                    }
-                                }
-                            } else {
-                                Image(systemName: "person.circle.fill")
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 50, height: 50)
-                                    .foregroundColor(.gray)
-                            }
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(authVM.currentUser?.name ?? "User Name")
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                Text(authVM.currentUser?.email ?? "user@example.com")
-                                    .font(.subheadline)
-                                    .foregroundColor(.gray)
-                            }
-                        }
-                    }
-                }
+                AccountSectionView()
                 
                 // Section 2: Customize
                 Section(header: Text("Customize ✦").font(.headline)) {
@@ -148,6 +114,79 @@ struct SettingsView: View {
             }
             .tint(.green)
             .navigationTitle("Settings ❀")
+        }
+    }
+}
+
+struct AccountSectionView: View {
+    @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel
+
+    var body: some View {
+        VStack(spacing: 10) {
+            // 👉 Avatar + Thông tin người dùng
+            NavigationLink(destination: ProfileView()) {
+                HStack(spacing: 15) {
+                    if let avatarURL = authVM.currentUser?.avatarURL, !avatarURL.isEmpty {
+                        AsyncImage(url: URL(string: avatarURL)) { phase in
+                            if let image = phase.image {
+                                image
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .clipShape(Circle())
+                            } else {
+                                Image(systemName: "person.circle.fill")
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 50, height: 50)
+                                    .foregroundColor(.gray)
+                            }
+                        }
+                    } else {
+                        Image(systemName: "person.circle.fill")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .foregroundColor(.gray)
+                    }
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(authVM.currentUser?.name ?? "User Name")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                        Text(authVM.currentUser?.email ?? "user@example.com")
+                            .font(.subheadline)
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+
+            // 👉 Toggle đồng bộ Google Calendar
+            Toggle(isOn: $googleAuthVM.isSignedIn) {
+                HStack {
+                    Image(systemName: "calendar")
+                        .foregroundColor(.green)
+                    Text("Sync with Google Calendar")
+                        .font(.system(size: 16))
+                }
+            }
+            .toggleStyle(SwitchToggleStyle(tint: .green))
+            .onChange(of: googleAuthVM.isSignedIn) { _, newValue in
+                if newValue {
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let rootViewController = windowScene.windows.first?.rootViewController {
+                        googleAuthVM.signIn(presentingViewController: rootViewController) { result in
+                            if case .failure(let error) = result {
+                                print("Google Sign-In failed: \(error.localizedDescription)")
+                                googleAuthVM.isSignedIn = false
+                            }
+                        }
+                    }
+                } else {
+                    googleAuthVM.signOut()
+                }
+            }
         }
     }
 }
@@ -295,4 +334,5 @@ struct FAQView: View {
         .environmentObject(categoryVM)
         .environmentObject(notificationsVM)
         .environmentObject(userVM)
+        .environmentObject(GoogleAuthViewModel())
 }

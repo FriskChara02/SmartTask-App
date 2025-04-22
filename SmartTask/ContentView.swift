@@ -25,6 +25,11 @@ struct ContentView: View {
             }
         }
         .preferredColorScheme(isDarkMode ? .dark : .light)
+        .onReceive(NotificationCenter.default.publisher(for: .showLoginScreen)) { _ in
+            // ^^ Chuyển về màn hình đăng nhập khi token hết hạn
+            authVM.isAuthenticated = false
+            print("🔐 Received showLoginScreen notification, switching to LoginView")
+        }
     }
 }
 
@@ -34,9 +39,11 @@ struct ContentView: View {
     let categoryVM = CategoryViewModel()
     let notificationManager = NotificationManager()
     let userVM = UserViewModel()
-    let eventVM = EventViewModel()
     let authVM = AuthViewModel()
-    return ContentView()
+    let googleAuthVM = GoogleAuthViewModel()
+    let eventVM = EventViewModel(googleAuthVM: googleAuthVM)
+    
+    ContentView()
         .environmentObject(authVM)
         .environmentObject(taskVM)
         .environmentObject(categoryVM)
@@ -44,4 +51,5 @@ struct ContentView: View {
         .environmentObject(notificationsVM)
         .environmentObject(userVM)
         .environmentObject(eventVM)
+        .environmentObject(googleAuthVM)
 }

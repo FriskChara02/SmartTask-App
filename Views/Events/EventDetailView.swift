@@ -5,6 +5,7 @@ struct EventDetailView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.themeColor) var themeColor
+    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel // ✅ Theo dõi trạng thái Google Calendar
     
     let event: EventModel
     @State private var isEditing = false
@@ -227,6 +228,52 @@ struct EventDetailView: View {
                 .cornerRadius(12)
                 .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
             }
+            
+            // Thêm nút Add to Google Calendar
+            Button(action: {
+                GoogleCalendarService.shared.createEvent(
+                    title: event.title,
+                    startDate: event.startDate,
+                    endDate: event.endDate,
+                    description: event.description
+                ) { result in
+                    switch result {
+                    case .success(let eventId):
+                        print("Added to Google Calendar with ID: \(eventId)")
+                        // Cập nhật googleEventId trong database
+                        let updatedEvent = EventModel(
+                            id: event.id,
+                            userId: event.userId,
+                            title: event.title,
+                            description: event.description,
+                            startDate: event.startDate,
+                            endDate: event.endDate,
+                            priority: event.priority,
+                            isAllDay: event.isAllDay,
+                            createdAt: event.createdAt,
+                            updatedAt: Date(),
+                            googleEventId: eventId
+                        )
+                        eventVM.updateEvent(event: updatedEvent)
+                    case .failure(let error):
+                        print("Failed to add to Google Calendar: \(error)")
+                    }
+                }
+            }) {
+                HStack {
+                    Image(systemName: "calendar.badge.plus")
+                    Text("Add to Google Calendar")
+                }
+                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                .foregroundColor(.white)
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(LinearGradient(gradient: Gradient(colors: [themeColor, .purple]), startPoint: .leading, endPoint: .trailing))
+                .cornerRadius(12)
+                .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
+                .opacity(googleAuthVM.isSignedIn ? 1.0 : 0.5) // Mờ khi chưa sync
+            }
+            .disabled(!googleAuthVM.isSignedIn) // Vô hiệu nếu chưa đăng nhập Google
         }
         .padding(.horizontal)
         .onReceive(NotificationCenter.default.publisher(for: .dismissAddEvent)) { _ in
@@ -286,5 +333,6 @@ private let dateFormatter: DateFormatter = {
         updatedAt: Date()
     )
     EventDetailView(event: event)
-        .environmentObject(EventViewModel())
+        .environmentObject(EventViewModel(googleAuthVM: GoogleAuthViewModel()))
+        .environmentObject(GoogleAuthViewModel())
 }

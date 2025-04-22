@@ -408,7 +408,10 @@ struct BarChartsView: View {
 #Preview {
     let notificationsVM = NotificationsViewModel()
     let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
-    let eventVM = EventViewModel()
+    let googleAuthVM = GoogleAuthViewModel()
+    let eventVM = EventViewModel(googleAuthVM: googleAuthVM)
     return BarChartsView(taskVM: taskVM, eventVM: eventVM)
+        .environmentObject(eventVM)
+        .environmentObject(googleAuthVM)
         .environment(\.themeColor, .blue)
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct EventModel: Identifiable, Codable {
+struct EventModel: Identifiable, Codable, Equatable { // ^^ Thêm Equatable
     let id: Int
     let userId: Int
     let title: String
@@ -18,8 +18,9 @@ struct EventModel: Identifiable, Codable {
     let isAllDay: Bool
     let createdAt: Date
     let updatedAt: Date
+    let googleEventId: String?
     
-    init(id: Int, userId: Int, title: String, description: String? = nil, startDate: Date, endDate: Date? = nil, priority: String, isAllDay: Bool, createdAt: Date, updatedAt: Date) {
+    init(id: Int, userId: Int, title: String, description: String? = nil, startDate: Date, endDate: Date? = nil, priority: String, isAllDay: Bool, createdAt: Date, updatedAt: Date, googleEventId: String? = nil) {
         self.id = id
         self.userId = userId
         self.title = title
@@ -30,6 +31,7 @@ struct EventModel: Identifiable, Codable {
         self.isAllDay = isAllDay
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+        self.googleEventId = googleEventId
     }
     
     enum CodingKeys: String, CodingKey {
@@ -43,6 +45,7 @@ struct EventModel: Identifiable, Codable {
         case isAllDay = "isAllDay"
         case createdAt = "createdAt"
         case updatedAt = "updatedAt"
+        case googleEventId = "googleEventId"
     }
     
     init(from decoder: Decoder) throws {
@@ -58,6 +61,7 @@ struct EventModel: Identifiable, Codable {
         isAllDay = isAllDayValue != 0
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
+        googleEventId = try container.decodeIfPresent(String.self, forKey: .googleEventId)
     }
     
     func encode(to encoder: Encoder) throws {
@@ -72,5 +76,11 @@ struct EventModel: Identifiable, Codable {
         try container.encode(isAllDay ? 1 : 0, forKey: .isAllDay)
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
+        try container.encodeIfPresent(googleEventId, forKey: .googleEventId)
+    }
+    
+    // ^^ Triển khai Equatable để so sánh sự kiện
+    static func == (lhs: EventModel, rhs: EventModel) -> Bool {
+        lhs.id == rhs.id && lhs.googleEventId == rhs.googleEventId
     }
 }

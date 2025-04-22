@@ -11,7 +11,6 @@ struct HomeView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Nội dung chính phụ thuộc vào selectedTab
             Group {
                 switch selectedTab {
                 case 0:
@@ -82,7 +81,8 @@ struct TabBarButton: View {
     let notificationsVM = NotificationsViewModel()
     let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     let userVM = UserViewModel()
-    let eventVM = EventViewModel()
+    let googleAuthVM = GoogleAuthViewModel()
+    let eventVM = EventViewModel(googleAuthVM: googleAuthVM)
     let authVM = AuthViewModel()
     authVM.currentUser = UserModel(id: 7, name: "Tester01", email: "Test01", password: "123", avatarURL: nil, description: "I’m still newbie.", dateOfBirth: Date(), location: "Cat Islands", joinedDate: nil, gender: "Nam", hobbies: "Love Cats", bio: "Halo")
     authVM.isAuthenticated = true
@@ -94,4 +94,5 @@ struct TabBarButton: View {
         .environmentObject(notificationsVM)
         .environmentObject(userVM)
         .environmentObject(eventVM)
+        .environmentObject(googleAuthVM)
 }

@@ -1,12 +1,22 @@
+//
+//  CalendarView.swift
+//  SmartTask
+//
+//  Created by Loi Nguyen on 17/4/25.
+//
+
 import SwiftUI
 
 struct CalendarView: View {
     @StateObject private var taskVM: TaskViewModel
     @StateObject private var categoryVM = CategoryViewModel()
+    @StateObject private var googleCalendarService = GoogleCalendarService.shared
     
     @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.themeColor) var themeColor
-    
+    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel // ✅ Theo dõi trạng thái Google Calendar
+
+    @State private var showGoogleCalendar: Bool = false // ✅ Chuyển đổi giữa SmartTask và Google Calendar
     @State private var selectedDate = Date()
     @State private var currentMonth = Date()
     @State private var isCollapsed = false
@@ -22,57 +32,58 @@ struct CalendarView: View {
         _taskVM = StateObject(wrappedValue: TaskViewModel(notificationsVM: notificationsVM, userId: nil))
     }
     
+    // MARK: - Body
     var body: some View {
         NavigationView {
             ZStack {
-                // Gradient Background
-                LinearGradient(gradient: Gradient(colors: [themeColor.opacity(0.1), .green.opacity(0.1)]), startPoint: .top, endPoint: .bottom) // Dùng themeColor
+                LinearGradient(gradient: Gradient(colors: [themeColor.opacity(0.1), .green.opacity(0.1)]), startPoint: .top, endPoint: .bottom)
                     .ignoresSafeArea()
                 
-                // Nội dung chính với ScrollView
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
-                        // Hàng 1: Điều hướng tháng (đưa lên đầu)
-                        monthNavigation
-                        
-                        // Hàng 2: Ngày trong tuần
-                        weekDays
-                            .frame(maxWidth: .infinity)
-                        
-                        // Hàng 3: Lưới ngày
-                        Group {
-                            if isCollapsed {
-                                collapsedCalendar
-                            } else {
-                                fullCalendar
-                            }
+                        Picker("Calendar", selection: $showGoogleCalendar) {
+                            Text("SmartTask").tag(false)
+                            Text("Google").tag(true)
                         }
-                        .transition(.opacity)
-                        .frame(maxWidth: .infinity)
+                        .pickerStyle(.segmented)
+                        .frame(width: 150)
+                        .disabled(!googleAuthVM.isSignedIn)
+                        .padding(.horizontal, 10)
                         
-                        // Thanh ngang giữa hàng 3 và 4
-                        LinearGradient(gradient: Gradient(colors: [themeColor, .purple]), startPoint: .leading, endPoint: .trailing)
-                            .frame(height: 2)
-                            .cornerRadius(1)
+                        if showGoogleCalendar && googleAuthVM.isSignedIn {
+                            GoogleCalendarView(showGoogleCalendar: $showGoogleCalendar)
+                                .environmentObject(googleAuthVM)
+                                .environmentObject(googleCalendarService)
+                                .environment(\.themeColor, themeColor)
+                                .frame(minHeight: UIScreen.main.bounds.height - 200) // Đảm bảo full chiều cao
+                        } else {
+                            monthNavigation
+                            weekDays
+                                .frame(maxWidth: .infinity)
+                            Group {
+                                if isCollapsed {
+                                    collapsedCalendar
+                                } else {
+                                    fullCalendar
+                                }
+                            }
+                            .transition(.opacity)
+                            .frame(maxWidth: .infinity)
+                            LinearGradient(gradient: Gradient(colors: [themeColor, .purple]), startPoint: .leading, endPoint: .trailing)
+                                .frame(height: 2)
+                                .cornerRadius(1)
+                            categoryList
+                            LinearGradient(gradient: Gradient(colors: [themeColor, .purple]), startPoint: .leading, endPoint: .trailing)
+                                .frame(height: 2)
+                                .cornerRadius(1)
+                            taskList
+                        }
                         
-                        // Hàng 4: Danh sách category trong tháng
-                        categoryList
-                        
-                        // Thanh ngang giữa hàng 4 và 5
-                        LinearGradient(gradient: Gradient(colors: [themeColor, .purple]), startPoint: .leading, endPoint: .trailing)
-                            .frame(height: 2)
-                            .cornerRadius(1)
-                        
-                        // Hàng 5: Danh sách task của ngày được chọn
-                        taskList
-                        
-                        // Spacer để đẩy nội dung lên nếu cần
                         Spacer()
                     }
                     .padding()
                 }
                 
-                // Button Add Task cố định dưới cùng, nhạt 75%
                 VStack {
                     Spacer()
                     ButtonAddTasksView(action: {
@@ -80,7 +91,7 @@ struct CalendarView: View {
                             showAddTaskView = true
                         }
                     })
-                    .opacity(0.60) // Nhạt
+                    .opacity(0.60)
                     .padding(.bottom, 10)
                 }
             }
@@ -93,6 +104,11 @@ struct CalendarView: View {
                 taskVM.userId = authVM.currentUser?.id
                 taskVM.fetchTasks()
                 categoryVM.fetchCategories()
+                // Đồng bộ trạng thái Google Calendar
+                if !googleAuthVM.isSignedIn && GoogleCalendarService.shared.isSignedIn {
+                    googleAuthVM.isSignedIn = true
+                    print("✅ Synced Google Calendar sign-in state")
+                }
             }
         }
         .environmentObject(taskVM)
@@ -119,7 +135,7 @@ struct CalendarView: View {
             Spacer()
             
             Button(action: {
-                showDatePicker = true // Hiển thị DatePicker khi nhấn
+                showDatePicker = true
             }) {
                 Text(" \(dateHelper.formatDate(currentMonth, format: "MMM, yyyy"))")
                     .font(.title2)
@@ -133,7 +149,6 @@ struct CalendarView: View {
             }
             .sheet(isPresented: $showDatePicker) {
                 VStack {
-                    // Thay DatePicker bằng Picker cho tháng và năm
                     HStack {
                         Picker("Month", selection: Binding(
                             get: { calendar.component(.month, from: currentMonth) },
@@ -161,7 +176,7 @@ struct CalendarView: View {
                                 }
                             }
                         )) {
-                            ForEach(2000...2100, id: \.self) { year in // Phạm vi năm tùy chỉnh
+                            ForEach(2000...2100, id: \.self) { year in
                                 Text(String(year))
                             }
                         }
@@ -469,4 +484,5 @@ struct CalendarView: View {
         .environmentObject(AuthViewModel())
         .environmentObject(TaskViewModel(notificationsVM: NotificationsViewModel(), userId: 1))
         .environmentObject(CategoryViewModel())
+        .environmentObject(GoogleAuthViewModel())
 }

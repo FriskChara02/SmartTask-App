@@ -21,9 +21,10 @@ struct HealthWarningView: View {
     @State private var isHealthStatusMenuExpanded: Bool = false
     @State private var isMeasurementMenuExpanded: Bool = false
     
-    
     // MARK: - Initialization
-    init(authVM: AuthViewModel = AuthViewModel(), taskVM: TaskViewModel = TaskViewModel(notificationsVM: NotificationsViewModel(), userId: nil), eventVM: EventViewModel = EventViewModel()) {
+    init(authVM: AuthViewModel = AuthViewModel(),
+         taskVM: TaskViewModel = TaskViewModel(notificationsVM: NotificationsViewModel(), userId: nil),
+         eventVM: EventViewModel = EventViewModel(googleAuthVM: GoogleAuthViewModel())) {
         _viewModel = StateObject(wrappedValue: HealthWarningViewModel(
             taskVM: taskVM,
             eventVM: eventVM,
@@ -416,7 +417,8 @@ struct HealthWarningView: View {
 #Preview {
     let notificationsVM = NotificationsViewModel()
     let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
-    let eventVM = EventViewModel()
+    let googleAuthVM = GoogleAuthViewModel()
+    let eventVM = EventViewModel(googleAuthVM: googleAuthVM)
     let authVM = AuthViewModel()
     authVM.currentUser = UserModel(id: 7, name: "Tester01", email: "Test01", password: "123", avatarURL: nil, description: "I’m still newbie.", dateOfBirth: Date(), location: "Cat Islands", joinedDate: nil, gender: "Nam", hobbies: "Love Cats", bio: "Halo")
     authVM.isAuthenticated = true
@@ -426,6 +428,7 @@ struct HealthWarningView: View {
             .environmentObject(authVM)
             .environmentObject(taskVM)
             .environmentObject(eventVM)
+            .environmentObject(googleAuthVM)
             .environment(\.themeColor, .blue)
     }
 }
