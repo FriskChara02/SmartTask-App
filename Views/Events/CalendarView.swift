@@ -7,22 +7,30 @@
 
 import SwiftUI
 
+enum CalendarTab: String {
+    case smartTask = "SmartTask"
+    case google = "Google"
+    case weather = "Weather"
+}
+
 struct CalendarView: View {
     @StateObject private var taskVM: TaskViewModel
     @StateObject private var categoryVM = CategoryViewModel()
     @StateObject private var googleCalendarService = GoogleCalendarService.shared
+    @EnvironmentObject var weatherVM: WeatherViewModel // Thêm WeatherViewModel
     
     @EnvironmentObject var authVM: AuthViewModel
     @Environment(\.themeColor) var themeColor
-    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel // ✅ Theo dõi trạng thái Google Calendar
-
-    @State private var showGoogleCalendar: Bool = false // ✅ Chuyển đổi giữa SmartTask và Google Calendar
+    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel
+    
+    @State private var selectedTab: CalendarTab = .smartTask
     @State private var selectedDate = Date()
     @State private var currentMonth = Date()
     @State private var isCollapsed = false
     @State private var doubleTappedDate: Date?
     @State private var showAddTaskView = false
     @State private var showDatePicker = false
+    @State private var showGoogleCalendar: Bool = false
     
     private let calendar = Calendar.current
     private let dateHelper = DateHelper.shared
@@ -41,21 +49,35 @@ struct CalendarView: View {
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 20) {
-                        Picker("Calendar", selection: $showGoogleCalendar) {
-                            Text("SmartTask").tag(false)
-                            Text("Google").tag(true)
+                        Picker("Calendar", selection: $selectedTab) {
+                            Text("SmartTask").tag(CalendarTab.smartTask)
+                            Text("Google")
+                                .tag(CalendarTab.google)
+                                .disabled(!googleAuthVM.isSignedIn)
+                                .opacity(googleAuthVM.isSignedIn ? 1.0 : 0.5)
+                            Text("Weather").tag(CalendarTab.weather)
                         }
                         .pickerStyle(.segmented)
-                        .frame(width: 150)
-                        .disabled(!googleAuthVM.isSignedIn)
+                        .frame(width: 250)
                         .padding(.horizontal, 10)
+                        .onChange(of: selectedTab) {oldTab, newTab in
+                            if newTab == .google && !googleAuthVM.isSignedIn {
+                                selectedTab = .smartTask // Ép về SmartTask nếu chưa đăng nhập
+                                print("🚫 Google tab selected but not signed in, reverting to SmartTask")
+                            }
+                        }
                         
-                        if showGoogleCalendar && googleAuthVM.isSignedIn {
-                            GoogleCalendarView(showGoogleCalendar: $showGoogleCalendar)
+                        if selectedTab == .google && googleAuthVM.isSignedIn {
+                            GoogleCalendarView(showGoogleCalendar: .constant(true))
                                 .environmentObject(googleAuthVM)
                                 .environmentObject(googleCalendarService)
                                 .environment(\.themeColor, themeColor)
-                                .frame(minHeight: UIScreen.main.bounds.height - 200) // Đảm bảo full chiều cao
+                                .frame(minHeight: UIScreen.main.bounds.height - 200)
+                        } else if selectedTab == .weather {
+                            WeatherView()
+                                .environmentObject(weatherVM)
+                                .environment(\.themeColor, themeColor)
+                                .frame(minHeight: UIScreen.main.bounds.height - 200)
                         } else {
                             monthNavigation
                             weekDays
@@ -99,12 +121,12 @@ struct CalendarView: View {
                 AddTaskView()
                     .environmentObject(taskVM)
                     .environmentObject(categoryVM)
+                    .environmentObject(weatherVM)
             }
             .onAppear {
                 taskVM.userId = authVM.currentUser?.id
                 taskVM.fetchTasks()
                 categoryVM.fetchCategories()
-                // Đồng bộ trạng thái Google Calendar
                 if !googleAuthVM.isSignedIn && GoogleCalendarService.shared.isSignedIn {
                     googleAuthVM.isSignedIn = true
                     print("✅ Synced Google Calendar sign-in state")
@@ -113,6 +135,7 @@ struct CalendarView: View {
         }
         .environmentObject(taskVM)
         .environmentObject(categoryVM)
+        .environmentObject(weatherVM)
     }
     
     // MARK: - Hàng 1: Điều hướng tháng
@@ -232,7 +255,7 @@ struct CalendarView: View {
                     .font(.system(size: 14, weight: .medium))
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .foregroundColor(.green) // Màu xanh lá
+                    .foregroundColor(.green)
                     .background(Color(.systemBackground).opacity(0.9))
             }
         }
@@ -327,7 +350,7 @@ struct CalendarView: View {
                             if let categoryName = categoryName(for: task.categoryId) {
                                 Text(categoryName)
                                     .font(.system(size: 12))
-                                    .foregroundColor(categoryColor(for: task.categoryId).opacity(0.8)) // Màu category, nhạt 20%
+                                    .foregroundColor(categoryColor(for: task.categoryId).opacity(0.8))
                                     .lineLimit(1)
                                     .padding(.horizontal, 4)
                                     .background(Color(.systemBackground).opacity(0.8))
@@ -485,4 +508,6 @@ struct CalendarView: View {
         .environmentObject(TaskViewModel(notificationsVM: NotificationsViewModel(), userId: 1))
         .environmentObject(CategoryViewModel())
         .environmentObject(GoogleAuthViewModel())
+        .environmentObject(WeatherViewModel())
+        .environment(\.themeColor, .blue)
 }

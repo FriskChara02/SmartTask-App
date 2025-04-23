@@ -6,6 +6,7 @@ struct TaskListView: View {
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var weatherVM: WeatherViewModel
     @Environment(\.themeColor) var themeColor
     
     @State private var showMenu = false
@@ -75,27 +76,27 @@ struct TaskListView: View {
             }
             .navigationTitle("Danh sách công việc ✦")
             .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    HStack {
-                        Button(action: {
-                            taskVM.isRefreshing = true // Bắt đầu hiệu ứng mờ
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                taskVM.fetchTasks() // Tải lại task
-                                taskVM.isRefreshing = false // Kết thúc hiệu ứng, task hiện từ từ
-                            }
-                        }) {
-                            Image(systemName: "heart.fill")
-                                .foregroundColor(themeColor)
+                ToolbarItem(placement: .navigationBarLeading) {
+                    WeatherWidgetView()
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        taskVM.isRefreshing = true
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            taskVM.fetchTasks()
+                            taskVM.isRefreshing = false
                         }
+                    }) {
+                        Image(systemName: "heart.fill")
+                        .foregroundColor(themeColor)
                     }
                 }
             }
             .sheet(isPresented: $isShowingNotifications) {
                 NotificationView(
-                    selectedTab: $selectedTab, // Truyền selectedTab từ TaskListView
+                    selectedTab: $selectedTab,
                     selectedTaskIds: $selectedTaskIds,
                     onTaskSelected: { taskId in
-                        // Logic khi chọn task (nếu cần)
                         if let taskId = taskId {
                             selectedTaskIds.insert(taskId)
                         }
@@ -170,4 +171,5 @@ struct TaskListView: View {
         .environmentObject(CategoryViewModel())
         .environmentObject(notificationsVM)
         .environmentObject(AuthViewModel())
+        .environmentObject(WeatherViewModel())
 }

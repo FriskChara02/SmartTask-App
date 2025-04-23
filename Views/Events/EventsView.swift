@@ -4,18 +4,19 @@ import GoogleSignIn
 struct EventsView: View {
     @EnvironmentObject var eventVM: EventViewModel
     @EnvironmentObject var authVM: AuthViewModel
+    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel
+    @EnvironmentObject var weatherVM: WeatherViewModel
+    
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.themeColor) var themeColor
-    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel // ✅ Theo dõi trạng thái Google Calendar
     
     @State private var showingAddEvent = false
     @State private var selectedEvent: EventModel?
     @State private var showYourEvents = true
     @State private var showSpecialEvents = true
     @State private var showCompletedEvents = true
-    @State private var isLoading = true // ^^ [NEW] Theo dõi trạng thái tải
+    @State private var isLoading = true
     
-    // Các ngày lễ đặc biệt ở Việt Nam
     private let specialEvents: [EventModel] = [
         EventModel(id: 1001, userId: 0, title: "Lễ Valentine", description: "Ngày lễ tình nhân", startDate: createDate(year: 2025, month: 2, day: 14), endDate: nil, priority: "Medium", isAllDay: true, createdAt: Date(), updatedAt: Date()),
         EventModel(id: 1002, userId: 0, title: "Quốc tế Phụ nữ", description: "Ngày 8/3", startDate: createDate(year: 2025, month: 3, day: 8), endDate: nil, priority: "Medium", isAllDay: true, createdAt: Date(), updatedAt: Date()),
@@ -28,132 +29,19 @@ struct EventsView: View {
         EventModel(id: 1009, userId: 0, title: "Ngày Phụ nữ Việt Nam", description: "Ngày 20/10", startDate: createDate(year: 2025, month: 10, day: 20), endDate: nil, priority: "Medium", isAllDay: true, createdAt: Date(), updatedAt: Date())
     ]
     
+    // MARK: - Body
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient(
-                    gradient: Gradient(colors: [themeColor.opacity(0.1), Color(UIColor.systemBackground)]),
-                    startPoint: .top,
-                    endPoint: .bottom
-                )
-                .edgesIgnoringSafeArea(.all)
-                
-                if isLoading { // ^^ [NEW] Hiển thị khi đang tải
-                    ProgressView("Đang tải sự kiện...")
-                        .progressViewStyle(.circular)
-                        .foregroundColor(themeColor)
-                } else {
-                    ScrollView {
-                        VStack(spacing: 20) {
-                            // Your Events
-                            DisclosureGroup(isExpanded: $showYourEvents) {
-                                ForEach(eventVM.events.sorted(by: { $0.startDate < $1.startDate }), id: \.id) { event in // ^^ [NEW] Sử dụng id: \.id để tránh trùng lặp
-                                    Button(action: {
-                                        withAnimation(.easeInOut) {
-                                            selectedEvent = event
-                                        }
-                                    }) {
-                                        EventCard(event: event)
-                                    }
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "person.fill")
-                                        .foregroundColor(themeColor)
-                                    Text("Your Events                                ⸜(｡˃ ᵕ ˂ )⸝")
-                                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                            .padding()
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(12)
-                            .padding(.horizontal)
-                            
-                            // Special Events
-                            DisclosureGroup(isExpanded: $showSpecialEvents) {
-                                ForEach(specialEvents, id: \.id) { event in // ^^ [NEW] Thêm id: \.id cho rõ ràng
-                                    Button(action: {
-                                        withAnimation(.easeInOut) {
-                                            selectedEvent = event
-                                        }
-                                    }) {
-                                        EventCard(event: event)
-                                    }
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "star.fill")
-                                        .foregroundColor(themeColor)
-                                    Text("Special Events                      ♡ (˶˃ ᵕ ˂˶)")
-                                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                            .padding()
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(12)
-                            .padding(.horizontal)
-                            
-                            // Completed Events
-                            DisclosureGroup(isExpanded: $showCompletedEvents) {
-                                ForEach(eventVM.completedEvents, id: \.id) { event in // ^^ [NEW] Thêm id: \.id để tránh trùng lặp
-                                    HStack {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .foregroundColor(.green)
-                                            .font(.system(size: 16))
-                                        EventCard(event: event)
-                                            .opacity(0.5)
-                                        Spacer()
-                                        Button(action: {
-                                            withAnimation {
-                                                eventVM.deleteEvent(eventId: event.id)
-                                                eventVM.completedEvents.removeAll { $0.id == event.id }
-                                            }
-                                        }) {
-                                            Image(systemName: "trash.fill")
-                                                .foregroundColor(.red)
-                                                .font(.system(size: 16))
-                                        }
-                                    }
-                                }
-                                if !eventVM.completedEvents.isEmpty {
-                                    Button(action: {
-                                        withAnimation {
-                                            eventVM.completedEvents.forEach { eventVM.deleteEvent(eventId: $0.id) }
-                                            eventVM.completedEvents.removeAll()
-                                        }
-                                    }) {
-                                        Text("Xóa tất cả")
-                                            .font(.system(size: 16, weight: .semibold))
-                                            .foregroundColor(.red)
-                                            .padding(.vertical, 8)
-                                            .frame(maxWidth: .infinity)
-                                            .background(Color.red.opacity(0.1))
-                                            .cornerRadius(8)
-                                    }
-                                    .padding(.top, 10)
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(themeColor)
-                                    Text("Events Completed                  (⸝⸝> ᴗ•⸝⸝)")
-                                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                        .foregroundColor(.primary)
-                                }
-                            }
-                            .padding()
-                            .background(Color(UIColor.secondarySystemBackground))
-                            .cornerRadius(12)
-                            .padding(.horizontal)
-                        }
-                    }
-                }
+                backgroundGradient
+                contentView
             }
             .navigationTitle("Sự kiện •⩊•")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    WeatherWidgetView()
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: {
                         withAnimation(.spring()) {
@@ -170,20 +58,19 @@ struct EventsView: View {
                 AddEventView()
                     .environmentObject(eventVM)
                     .environmentObject(authVM)
-                    .environmentObject(googleAuthVM) // ✅ Truyền googleAuthVM để kiểm tra xung đột
+                    .environmentObject(googleAuthVM)
             }
             .sheet(item: $selectedEvent) { event in
                 EventDetailView(event: event)
                     .environmentObject(eventVM)
             }
             .onAppear {
-                // ^^ [NEW] Kiểm tra trạng thái đăng nhập trước khi fetch
                 if authVM.isAuthenticated, let userId = authVM.currentUser?.id {
                     eventVM.fetchEvents(forUserId: userId)
-                    print("📋 Rendering EventsView with \(eventVM.events.count) events: \(eventVM.events.map { $0.title })") // ^^ [NEW] Thêm log để debug
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { // ^^ [NEW] Chờ API hoàn tất
+                    print("📋 Rendering EventsView with \(eventVM.events.count) events: \(eventVM.events.map { $0.title })")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                         self.isLoading = false
-                        print("✅ Finished loading events: \(eventVM.events.count) events") // ^^ [NEW] Log xác nhận
+                        print("✅ Finished loading events: \(eventVM.events.count) events")
                     }
                 } else {
                     self.isLoading = false
@@ -201,6 +88,139 @@ struct EventsView: View {
                 )
             }
         }
+    }
+    
+    private var backgroundGradient: some View {
+        LinearGradient(
+            gradient: Gradient(colors: [themeColor.opacity(0.1), Color(UIColor.systemBackground)]),
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .edgesIgnoringSafeArea(.all)
+    }
+    
+    private var contentView: some View {
+        Group {
+            if isLoading {
+                ProgressView("Đang tải sự kiện...")
+                    .progressViewStyle(.circular)
+                    .foregroundColor(themeColor)
+            } else {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        yourEventsSection
+                        specialEventsSection
+                        completedEventsSection
+                    }
+                }
+            }
+        }
+    }
+    
+    private var yourEventsSection: some View {
+        DisclosureGroup(isExpanded: $showYourEvents) {
+            ForEach(eventVM.events.sorted(by: { $0.startDate < $1.startDate }), id: \.id) { event in
+                Button(action: {
+                    withAnimation(.easeInOut) {
+                        selectedEvent = event
+                    }
+                }) {
+                    EventCard(event: event)
+                }
+            }
+        } label: {
+            HStack {
+                Image(systemName: "person.fill")
+                    .foregroundColor(themeColor)
+                Text("Your Events                                ⸜(｡˃ ᵕ ˂ )⸝")
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .foregroundColor(.primary)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(12)
+        .padding(.horizontal)
+    }
+    
+    private var specialEventsSection: some View {
+        DisclosureGroup(isExpanded: $showSpecialEvents) {
+            ForEach(specialEvents, id: \.id) { event in
+                Button(action: {
+                    withAnimation(.easeInOut) {
+                        selectedEvent = event
+                    }
+                }) {
+                    EventCard(event: event)
+                }
+            }
+        } label: {
+            HStack {
+                Image(systemName: "star.fill")
+                    .foregroundColor(themeColor)
+                Text("Special Events                      ♡ (˶˃ ᵕ ˂˶)")
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .foregroundColor(.primary)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(12)
+        .padding(.horizontal)
+    }
+    
+    private var completedEventsSection: some View {
+        DisclosureGroup(isExpanded: $showCompletedEvents) {
+            ForEach(eventVM.completedEvents, id: \.id) { event in
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                        .font(.system(size: 16))
+                    EventCard(event: event)
+                        .opacity(0.5)
+                    Spacer()
+                    Button(action: {
+                        withAnimation {
+                            eventVM.deleteEvent(eventId: event.id)
+                            eventVM.completedEvents.removeAll { $0.id == event.id }
+                        }
+                    }) {
+                        Image(systemName: "trash.fill")
+                            .foregroundColor(.red)
+                            .font(.system(size: 16))
+                    }
+                }
+            }
+            if !eventVM.completedEvents.isEmpty {
+                Button(action: {
+                    withAnimation {
+                        eventVM.completedEvents.forEach { eventVM.deleteEvent(eventId: $0.id) }
+                        eventVM.completedEvents.removeAll()
+                    }
+                }) {
+                    Text("Xóa tất cả")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(.red)
+                        .padding(.vertical, 8)
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.1))
+                        .cornerRadius(8)
+                }
+                .padding(.top, 10)
+            }
+        } label: {
+            HStack {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(themeColor)
+                Text("Events Completed                  (⸝⸝> ᴗ•⸝⸝)")
+                    .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    .foregroundColor(.primary)
+            }
+        }
+        .padding()
+        .background(Color(UIColor.secondarySystemBackground))
+        .cornerRadius(12)
+        .padding(.horizontal)
     }
     
     private func priorityColor(_ priority: String) -> Color {
@@ -279,4 +299,5 @@ private let dateFormatter: DateFormatter = {
         .environmentObject(eventVM)
         .environmentObject(authVM)
         .environmentObject(GoogleAuthViewModel())
+        .environmentObject(WeatherViewModel())
 }

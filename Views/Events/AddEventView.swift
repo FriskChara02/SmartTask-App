@@ -12,6 +12,7 @@ struct AddEventView: View {
     @EnvironmentObject var eventVM: EventViewModel
     @EnvironmentObject var authVM: AuthViewModel
     @EnvironmentObject var googleAuthVM: GoogleAuthViewModel
+    @EnvironmentObject var weatherVM: WeatherViewModel
     @Environment(\.dismiss) var dismiss
     @Environment(\.themeColor) var themeColor
     
@@ -27,6 +28,7 @@ struct AddEventView: View {
     @State private var isCreatingEvent = false // Ngăn tap lặp
     @State private var showErrorAlert = false // Trạng thái để hiển thị Alert cho errorMessage
     
+    // MARK: - Body
     var body: some View {
         NavigationView {
             Form {
@@ -59,6 +61,12 @@ struct AddEventView: View {
                             .font(.system(size: 16, design: .rounded))
                     }
                     .toggleStyle(SwitchToggleStyle(tint: themeColor))
+                    
+                    WeatherForecastView(selectedDate: startDate)
+                    
+                    if let endDate = endDate, !Calendar.current.isDate(startDate, inSameDayAs: endDate) {
+                        WeatherForecastView(selectedDate: endDate)
+                    }
                 }
                 
                 Section(header: Text("Ưu tiên 𓆩♡𓆪").font(.system(size: 16, weight: .medium, design: .rounded))) {
@@ -103,7 +111,6 @@ struct AddEventView: View {
                         }
                         errorMessage = nil
                         if googleAuthVM.isSignedIn {
-                            // Kiểm tra xung đột với Google Calendar
                             GoogleCalendarService.shared.checkConflict(startDate: startDate, endDate: endDate ?? startDate) { result in
                                 switch result {
                                 case .success(let conflict):
@@ -117,7 +124,7 @@ struct AddEventView: View {
                                     print("❌ Failed to check conflict: \(error.localizedDescription)")
                                     errorMessage = "Không thể kiểm tra xung đột lịch: \(error.localizedDescription)"
                                     isCreatingEvent = false
-                                    showErrorAlert = true // Hiển thị Alert cho lỗi Google Calendar
+                                    showErrorAlert = true
                                 }
                             }
                         } else {
@@ -154,9 +161,9 @@ struct AddEventView: View {
                     title: Text("Lỗi"),
                     message: Text(eventVM.errorMessage ?? errorMessage ?? "Đã xảy ra lỗi không xác định"),
                     dismissButton: .default(Text("OK")) {
-                        eventVM.errorMessage = nil // Xóa errorMessage của EventViewModel
-                        errorMessage = nil // Xóa errorMessage cục bộ
-                        isCreatingEvent = false // Cho phép thử lại
+                        eventVM.errorMessage = nil
+                        errorMessage = nil
+                        isCreatingEvent = false
                     }
                 )
             }
@@ -268,5 +275,6 @@ struct AddEventView: View {
         .environmentObject(eventVM)
         .environmentObject(authVM)
         .environmentObject(googleAuthVM)
+        .environmentObject(WeatherViewModel())
         .environment(\.themeColor, .blue)
 }

@@ -3,6 +3,7 @@ import SwiftUI
 struct AddTaskView: View {
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var categoryVM: CategoryViewModel
+    @EnvironmentObject var weatherVM: WeatherViewModel
     @Environment(\.dismiss) var dismiss
     
     @State private var title = ""
@@ -34,7 +35,7 @@ struct AddTaskView: View {
         }
     }
     
-    // Sub-view cho phần "Thông tin công việc"
+    // MARK: - Sub-view cho phần "Thông tin công việc"
     private var taskInfoSection: some View {
         Section(header: Text("Thông tin công việc ❄︎")) {
             TextField("Tiêu đề", text: $title)
@@ -51,6 +52,10 @@ struct AddTaskView: View {
                 get: { dueDate ?? Date() },
                 set: { dueDate = $0 }
             ), displayedComponents: [.date, .hourAndMinute])
+            
+            if dueDate != nil {
+                WeatherForecastView(selectedDate: Date())
+            }
         }
     }
     
@@ -111,4 +116,5 @@ struct AddTaskView: View {
     AddTaskView()
         .environmentObject(taskVM)
         .environmentObject(CategoryViewModel())
+        .environmentObject(WeatherViewModel())
 }

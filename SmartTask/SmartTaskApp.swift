@@ -24,8 +24,9 @@ struct SmartTaskApp: App {
     @StateObject private var googleAuthVM: GoogleAuthViewModel // ✅ Quản lý trạng thái đăng nhập Google
     @StateObject private var calendarService = GoogleCalendarService.shared
     @StateObject private var eventVM: EventViewModel
+    @StateObject private var weatherVM = WeatherViewModel()
     
-    @AppStorage("themeColor") private var themeColor: String = "Blue" // Thêm AppStorage
+    @AppStorage("themeColor") private var themeColor: String = "Blue"
     
     // Danh sách màu để ánh xạ từ themeColor
     private let colors: [(name: String, color: Color)] = [
@@ -59,6 +60,7 @@ struct SmartTaskApp: App {
                 .environmentObject(eventVM)
                 .environmentObject(googleAuthVM) // ✅ Truyền googleAuthVM
                 .environmentObject(calendarService)
+                .environmentObject(weatherVM)
                 .onChange(of: authVM.currentUser) {
                     if let userId = authVM.currentUser?.id {
                         taskVM.userId = userId
