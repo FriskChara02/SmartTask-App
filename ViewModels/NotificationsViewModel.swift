@@ -3,7 +3,6 @@ import Foundation
 class NotificationsViewModel: ObservableObject {
     @Published var notifications: [NotificationsModel] = []
     
-    // API base URL (dùng URL thật từ XAMPP của bạn)
     private let baseURL = "http://localhost/SmartTask_API"
     
     // Lấy tất cả thông báo từ API
@@ -14,7 +13,7 @@ class NotificationsViewModel: ObservableObject {
             if let data = data {
                 do {
                     let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .iso8601 // Đảm bảo giải mã ngày đúng
+                    decoder.dateDecodingStrategy = .iso8601
                     let decoded = try decoder.decode([NotificationsModel].self, from: data)
                     DispatchQueue.main.async {
                         self.notifications = decoded
@@ -46,7 +45,7 @@ class NotificationsViewModel: ObservableObject {
         
         do {
             let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601 // Đảm bảo định dạng ngày đúng
+            encoder.dateEncodingStrategy = .iso8601
             let jsonData = try encoder.encode(newNotification)
             print("JSON gửi đi:", String(data: jsonData, encoding: .utf8) ?? "Không decode được")
             request.httpBody = jsonData

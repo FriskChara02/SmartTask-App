@@ -90,9 +90,9 @@ struct TopAppBarView: View {
                 }
                 .padding(.trailing, 8)
                 .sheet(isPresented: $showSearchSheet) {
-                    SearchView(selectedTab: $selectedTab) // Truyền binding selectedTab
+                    SearchView(selectedTab: $selectedTab)
                         .environmentObject(taskVM)
-                        .environmentObject(categoryVM) // Thêm categoryVM
+                        .environmentObject(categoryVM)
                 }
                 
                 // ⋮ Overflow Menu

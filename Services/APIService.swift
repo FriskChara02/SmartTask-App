@@ -222,4 +222,130 @@ struct APIService {
             }
         }.resume()
     }
+    
+    // 🟢 Hàm lưu feedback
+    static func saveFeedback(userId: Int, feedback: String, completion: @escaping (Bool, String) -> Void) {
+        let url = URL(string: baseURL + "save_feedback.php")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        let body: [String: Any] = ["user_id": userId, "feedback": feedback]
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ Lỗi kết nối API saveFeedback: \(error?.localizedDescription ?? "Không rõ")")
+                completion(false, "Lỗi kết nối API!")
+                return
+            }
+            
+            print("DEBUG: Save Feedback Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
+            
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let message = json["message"] as? String {
+                    completion(true, message)
+                } else if let errorMessage = json["error"] as? String {
+                    completion(false, errorMessage)
+                } else {
+                    completion(false, "Phản hồi không hợp lệ!")
+                }
+            } else {
+                completion(false, "Phản hồi không hợp lệ!")
+            }
+        }.resume()
+    }
+
+    // 🟢 Hàm lưu rating
+    static func saveRating(userId: Int, rating: Int, comment: String?, completion: @escaping (Bool, String) -> Void) {
+        let url = URL(string: baseURL + "save_rating.php")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        var body: [String: Any] = ["user_id": userId, "rating": rating]
+        if let comment = comment, !comment.isEmpty {
+            body["comment"] = comment
+        }
+        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
+        
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ Lỗi kết nối API saveRating: \(error?.localizedDescription ?? "Không rõ")")
+                completion(false, "Lỗi kết nối API!")
+                return
+            }
+            
+            print("DEBUG: Save Rating Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
+            
+            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let message = json["message"] as? String {
+                    completion(true, message)
+                } else if let errorMessage = json["error"] as? String {
+                    completion(false, errorMessage)
+                } else {
+                    completion(false, "Phản hồi không hợp lệ!")
+                }
+            } else {
+                completion(false, "Phản hồi không hợp lệ!")
+            }
+        }.resume()
+    }
+    
+    // 🟢 Hàm lấy danh sách ratings
+    static func fetchRatings(completion: @escaping (Bool, [RatingModel]?, String?) -> Void) {
+        let url = URL(string: baseURL + "get_ratings.php")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ Lỗi kết nối API fetchRatings: \(error?.localizedDescription ?? "Không rõ")")
+                completion(false, nil, "Lỗi kết nối API!")
+                return
+            }
+            
+            print("DEBUG: Fetch Ratings Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
+            
+            do {
+                let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                if let ratingsData = json?["ratings"] as? [[String: Any]] {
+                    let ratings = ratingsData.compactMap { dict -> RatingModel? in
+                        guard let id = (dict["id"] as? String).flatMap({ Int($0) }) ?? dict["id"] as? Int,
+                              let userId = (dict["user_id"] as? String).flatMap({ Int($0) }) ?? dict["user_id"] as? Int,
+                              let name = dict["name"] as? String,
+                              let rating = (dict["rating"] as? String).flatMap({ Int($0) }) ?? dict["rating"] as? Int,
+                              let createdAtString = dict["created_at"] as? String else {
+                            print("❌ Lỗi parse rating: \(dict)")
+                            return nil
+                        }
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+                        guard let createdAt = dateFormatter.date(from: createdAtString) else {
+                            print("❌ Lỗi parse created_at: \(createdAtString)")
+                            return nil
+                        }
+                        return RatingModel(
+                            id: id,
+                            userId: userId,
+                            name: name,
+                            rating: rating,
+                            comment: dict["comment"] as? String,
+                            createdAt: createdAt
+                        )
+                    }
+                    print("✅ Parsed \(ratings.count) ratings")
+                    completion(true, ratings, nil)
+                } else if let errorMessage = json?["error"] as? String {
+                    completion(false, nil, errorMessage)
+                } else {
+                    completion(false, nil, "Phản hồi không hợp lệ!")
+                }
+            } catch {
+                print("❌ Lỗi parse JSON: \(error.localizedDescription)")
+                completion(false, nil, "Lỗi parse JSON: \(error.localizedDescription)")
+            }
+        }).resume()
+    }
 }

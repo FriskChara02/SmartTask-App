@@ -8,6 +8,7 @@ struct HomeView: View {
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var userVM: UserViewModel
     @EnvironmentObject var eventVM: EventViewModel
+    @EnvironmentObject var weatherVM: WeatherViewModel
 
     var body: some View {
         VStack(spacing: 0) {
@@ -95,4 +96,5 @@ struct TabBarButton: View {
         .environmentObject(userVM)
         .environmentObject(eventVM)
         .environmentObject(googleAuthVM)
+        .environmentObject(WeatherViewModel())
 }

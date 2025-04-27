@@ -11,33 +11,33 @@ struct NotificationView: View {
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var categoryVM: CategoryViewModel
-    @Environment(\.themeColor) var themeColor // Thêm để dùng themeColor
-    @Environment(\.dismiss) var dismiss // Để đóng sheet
+    @Environment(\.themeColor) var themeColor
+    @Environment(\.dismiss) var dismiss
     
-    @Binding var selectedTab: String // Thêm để điều khiển TabBarView
+    @Binding var selectedTab: String
     @Binding var selectedTaskIds: Set<Int>
     
     let onTaskSelected: (Int?) -> Void
     
     @State private var highlightedTaskId: Int? = nil
-    @State private var selectedNotificationIds: Set<String> = [] // Để tích chọn thông báo
-    @State private var isSelecting: Bool = false // Chế độ chọn nhiều
-    @State private var selectedNotification: NotificationsModel? // Theo dõi thông báo được chọn
+    @State private var selectedNotificationIds: Set<String> = []
+    @State private var isSelecting: Bool = false
+    @State private var selectedNotification: NotificationsModel?
     
     
     var body: some View {
         NavigationView {
             List(notificationsVM.notifications) { notification in
-                notificationRow(notification: notification) // Tách thành view riêng
+                notificationRow(notification: notification)
             }
-            .listStyle(.plain) // Loại bỏ viền mặc định của List
+            .listStyle(.plain)
             .navigationTitle("Notifications ❀")
             .toolbar {
                 // MARK: - Toolbar Left
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: { dismiss() }) {
                         Image(systemName: "chevron.left")
-                            .foregroundColor(themeColor) // Dùng themeColor thay .blue
+                            .foregroundColor(themeColor)
                             .font(.system(size: 18, weight: .semibold))
                     }
                 }
@@ -62,12 +62,12 @@ struct NotificationView: View {
                             if !isSelecting { selectedNotificationIds.removeAll() }
                         }) {
                             Text(isSelecting ? "Cancel" : "Select")
-                                .foregroundColor(themeColor) // Dùng themeColor thay .blue
+                                .foregroundColor(themeColor)
                                 .font(.system(size: 16, weight: .medium))
                         }
                         
                         Button("Mark all as read") { notificationsVM.markAllAsRead() }
-                            .foregroundColor(themeColor) // Dùng themeColor thay .blue
+                            .foregroundColor(themeColor)
                             .font(.system(size: 16, weight: .medium))
                     }
                 }
@@ -90,16 +90,16 @@ struct NotificationView: View {
                     if let notification = selectedNotification {
                         NotificationDetailOverlay(notification: notification) {
                             withAnimation(.easeInOut(duration: 0.3)) {
-                                selectedNotification = nil // Đóng overlay
+                                selectedNotification = nil
                             }
                         }
                         .transition(.opacity.combined(with: .scale))
                     }
                 }
             )
-            .background(Color(.systemBackground).ignoresSafeArea()) // Nền tổng thể hiện đại
+            .background(Color(.systemBackground).ignoresSafeArea())
         }
-        .environmentObject(categoryVM) // Đảm bảo categoryVM có sẵn để tìm category
+        .environmentObject(categoryVM)
     }
     
     // MARK: - Notification Row
@@ -115,16 +115,16 @@ struct NotificationView: View {
             
             Button(action: {
                 withAnimation(.easeInOut(duration: 0.3)) {
-                    selectedNotification = notification // Hiển thị overlay
+                    selectedNotification = notification
                 }
             }) {
                 Text(notification.message)
                     .font(.body)
-                    .foregroundColor(notification.isRead ? .gray : .primary) // Dùng .primary cho Dark/Light Mode
+                    .foregroundColor(notification.isRead ? .gray : .primary)
                     .lineLimit(2)
                     .padding(.vertical, 8)
             }
-            .buttonStyle(PlainButtonStyle()) // Loại bỏ hiệu ứng mặc định
+            .buttonStyle(PlainButtonStyle())
             
             Spacer()
             
@@ -144,7 +144,7 @@ struct NotificationView: View {
         .padding(.vertical, 4)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(notification.isRead ? Color(.systemBackground) : themeColor.opacity(0.1)) // Nền hiện đại
+                .fill(notification.isRead ? Color(.systemBackground) : themeColor.opacity(0.1))
                 .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         )
         .padding(.horizontal, 8)
@@ -172,7 +172,7 @@ struct NotificationDetailOverlay: View {
         ZStack {
             Color.black.opacity(0.4)
                 .ignoresSafeArea()
-                .onTapGesture(perform: onDismiss) // Đóng khi nhấn ngoài
+                .onTapGesture(perform: onDismiss)
             
             VStack(spacing: 16) {
                 Text(notification.message)
@@ -249,7 +249,7 @@ struct NotificationDetailOverlay: View {
 private struct NotificationPreview: View {
     let notificationsVM = NotificationsViewModel()
     let taskVM: TaskViewModel
-    @State private var selectedTab = "All" // Thêm để preview TabBarView
+    @State private var selectedTab = "All"
     
     init() {
         taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
@@ -265,13 +265,13 @@ private struct NotificationPreview: View {
 
     var body: some View {
         NotificationView(
-            selectedTab: $selectedTab, // Truyền binding cho selectedTab
+            selectedTab: $selectedTab,
             selectedTaskIds: .constant([]),
             onTaskSelected: { _ in }
         )
         .environmentObject(taskVM)
         .environmentObject(notificationsVM)
-        .environmentObject(CategoryViewModel()) // Thêm categoryVM cho preview
+        .environmentObject(CategoryViewModel())
     }
 }
 

@@ -56,7 +56,7 @@ struct WeatherWidgetView: View {
             Alert(
                 title: Text("Gợi ý thời tiết 🌤️"),
                 message: Text(suggestionMessage),
-                dismissButton: .default(Text("OK"))
+                dismissButton: .default(Text("OK (✧ᴗ͈ˬᴗ͈)❀*.ﾟ"))
             )
         }
     }

@@ -33,7 +33,7 @@ struct HamburgerMenuView: View {
                 // Menu trượt từ trái
                 VStack(alignment: .leading) {
                     Text("SmartTask")
-                        .font(.title.bold())  // Thêm bold
+                        .font(.title.bold())
                         .foregroundColor(.cyan)
                         .padding(.top, 50)
                         .padding(.leading, 20)
@@ -41,7 +41,7 @@ struct HamburgerMenuView: View {
                     Divider()
                         .padding(.horizontal)
                     
-                    NavigationView { // Thêm NavigationView bao quanh List
+                    NavigationView {
                         List {
                             // Section 1: Tasks
                             Section(header: Text("Tasks ❀").font(.headline).foregroundColor(themeColor)) {
@@ -81,15 +81,15 @@ struct HamburgerMenuView: View {
                                         ForEach(categoryVM.categories) { category in
                                             HStack(spacing: 12) {
                                                 Image(systemName: category.icon ?? "folder")
-                                                    .foregroundColor(themeColor) // Đổi từ .blue sang themeColor
+                                                    .foregroundColor(themeColor)
                                                     .frame(width: 30)
                                                 Text(category.name)
-                                                    .foregroundColor(themeColor) // Đổi từ .primary sang themeColor
+                                                    .foregroundColor(themeColor)
                                                     .font(.body)
                                                 Spacer()
                                             }
                                             .padding(.vertical, 5)
-                                            .contentShape(Rectangle()) // Fill toàn bộ khung
+                                            .contentShape(Rectangle())
                                             .onTapGesture {
                                                 withAnimation(.easeInOut(duration: 0.3)) {
                                                     selectedTab = category.name
@@ -102,10 +102,10 @@ struct HamburgerMenuView: View {
                                     // Create New
                                     HStack(spacing: 12) {
                                         Image(systemName: "plus")
-                                            .foregroundColor(themeColor) // Đổi từ .blue sang themeColor
+                                            .foregroundColor(themeColor)
                                             .frame(width: 30)
                                         Text("Create New")
-                                            .foregroundColor(themeColor) // Đổi từ .primary sang themeColor
+                                            .foregroundColor(themeColor)
                                             .font(.body)
                                         Spacer()
                                     }

@@ -6,6 +6,7 @@ struct LoginView: View {
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var authVM: AuthViewModel
     @EnvironmentObject var userVM: UserViewModel
+    @EnvironmentObject var notificationsVM: NotificationsViewModel
     @Environment(\.themeColor) var themeColor
     
     @State private var email = ""
@@ -139,6 +140,7 @@ struct LoginView: View {
                         self.taskVM.userId = userId
                         UserDefaults.standard.set(userId, forKey: "userId")
                     }
+                    self.notificationsVM.fetchNotifications()
                 } else {
                     self.errorMessage = message
                 }

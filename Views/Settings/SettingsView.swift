@@ -107,7 +107,7 @@ struct SettingsView: View {
                             .foregroundColor(.gray)
                         Text("Version")
                         Spacer()
-                        Text("0.3.8")
+                        Text("0.8.1")
                             .foregroundColor(.gray)
                     }
                 }
@@ -199,125 +199,37 @@ struct NotificationSettingsView: View {
     }
 }
 
-struct HelpView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("🎉 Help Page 🎉")
-                .font(.title)
-            Text("Mình FriskChara ở đây để giúp bạn! Hãy vui vẻ nhé! 😊")
-        }
-        .navigationTitle("Help")
-    }
-}
-
-struct PrivacyPolicyView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("🔒 Privacy Policy")
-                .font(.title)
-            Text("Thông tin của bạn được bảo mật tuyệt đối!")
-        }
-        .navigationTitle("Privacy Policy")
-    }
-}
-
-struct TermsOfServiceView: View {
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("📜 Terms of Service")
-                .font(.title)
-            Text("Sử dụng SmartTask theo các điều khoản vui vẻ này!")
-        }
-        .navigationTitle("Terms of Service")
-    }
-}
-
-struct SendFeedbackView: View {
-    @State private var feedback: String = ""
-    @State private var showAlert: Bool = false
+// MARK: - Toast View
+struct Toast: View {
+    let message: String
     
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Your Feedback")
-                .font(.title2)
-            TextField("Enter your feedback", text: $feedback)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-            Button("Send") {
-                showAlert = true
-            }
-            .font(.headline)
-            .foregroundColor(.white)
+        Text(message)
+            .font(.system(size: 14, weight: .medium, design: .rounded))
+            .foregroundColor(.primary) // Tự động điều chỉnh theo Dark/Light Mode
             .padding()
-            .background(Color.blue)
+            .background(
+                ZStack {
+                    Color(UIColor.systemBackground).opacity(0.8) // Nền hệ thống
+                    VisualEffectView(effect: UIBlurEffect(style: .systemMaterial)) // Hiệu ứng mờ
+                        .opacity(0.9)
+                }
+            )
             .cornerRadius(10)
-        }
-        .navigationTitle("Send Feedback")
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text("Thank You!"), message: Text("Thank you for feedback to us!"), dismissButton: .default(Text("OK")))
-        }
+            .shadow(color: .gray.opacity(0.2), radius: 5, x: 0, y: 2)
+            .padding(.top, 50)
     }
 }
 
-struct RateUsView: View {
-    @State private var rating: Int = 0
-    @State private var showAlert: Bool = false
+struct VisualEffectView: UIViewRepresentable {
+    var effect: UIVisualEffect?
     
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Rate Us")
-                .font(.title2)
-            HStack(spacing: 10) {
-                ForEach(1...5, id: \.self) { star in
-                    Image(systemName: rating >= star ? "star.fill" : "star")
-                        .foregroundColor(.yellow)
-                        .onTapGesture {
-                            rating = star
-                            showAlert = true
-                        }
-                }
-            }
-            .font(.title)
-        }
-        .navigationTitle("Rate Us")
-        .alert(isPresented: $showAlert) {
-            Alert(title: Text("Thank You!"), message: Text("Thank you for Rate Us to us!"), dismissButton: .default(Text("OK")))
-        }
+    func makeUIView(context: UIViewRepresentableContext<Self>) -> UIVisualEffectView {
+        UIVisualEffectView()
     }
-}
-
-struct ShareAppView: View {
-    var body: some View {
-        Text("Share App - Coming Soon")
-            .navigationTitle("Share App")
-    }
-}
-
-struct FAQView: View {
-    var body: some View {
-        List {
-            Section(header: Text("Những câu hỏi thường gặp").font(.headline)) {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("1. Làm sao để thêm task mới?")
-                        .font(.subheadline).bold()
-                    Text("Bạn vào màn hình chính, nhấn nút 'leaf' và điền thông tin task.")
-                        .font(.subheadline)
-                }
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("2. Theme có thể thay đổi ở đâu?")
-                        .font(.subheadline).bold()
-                    Text("Vào Settings > Theme để chọn màu yêu thích!")
-                        .font(.subheadline)
-                }
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("3. Làm sao để xóa category?")
-                        .font(.subheadline).bold()
-                    Text("Gốc bên phải ở trên hình Pháo Hoa > Manage Categories, chọn dấu 3 chấm ngang và nhấn Delete.")
-                        .font(.subheadline)
-                }
-            }
-        }
-        .navigationTitle("FAQ")
+    
+    func updateUIView(_ uiView: UIVisualEffectView, context: UIViewRepresentableContext<Self>) {
+        uiView.effect = effect
     }
 }
 
