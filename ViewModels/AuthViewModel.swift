@@ -4,7 +4,9 @@ import Combine
 class AuthViewModel: ObservableObject {
     @Published var isAuthenticated = false
     @Published var currentUser: UserModel?
+    @Published var allUsers: [UserModel] = []
     var cancellables = Set<AnyCancellable>()
+    
     
     init() {
         // ^^ [NEW] Kiểm tra token trong UserDefaults để khôi phục trạng thái
@@ -38,7 +40,23 @@ class AuthViewModel: ObservableObject {
                 print("📥 Login response: success=\(success), message=\(message), user=\(user != nil ? String(describing: user) : "nil")") // ^^ [NEW] Log chi tiết response
                 
                 if success, let user = user {
-                    self.currentUser = user
+                    self.currentUser = UserModel(
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        password: "",
+                        avatarURL: user.avatarURL,
+                        description: user.description,
+                        dateOfBirth: user.dateOfBirth,
+                        location: user.location,
+                        joinedDate: user.joinedDate,
+                        gender: user.gender,
+                        hobbies: user.hobbies,
+                        bio: user.bio,
+                        token: user.token,
+                        status: user.status,
+                        role: user.role // 🟢 Lưu role từ response
+                    )
                     self.isAuthenticated = true
                     if let token = user.token {
                         UserDefaults.standard.set(token, forKey: "authToken")
@@ -51,7 +69,7 @@ class AuthViewModel: ObservableObject {
                         return
                     }
                     completion("Đăng nhập thành công!")
-                    print("✅ Login successful: \(user.email)")
+                    print("✅ Login successful: \(user.email), role=\(user.role ?? "nil")") // 🟢 Thêm log role
                 } else {
                     self.isAuthenticated = false
                     self.currentUser = nil
@@ -92,6 +110,29 @@ class AuthViewModel: ObservableObject {
     private func fetchUserProfile(userId: Int) {
         // ^^ [NEW] Hàm tải thông tin user nếu cần
         print("🔍 Fetching profile for userId: \(userId)") // ^^ [NEW] Log để debug
-        // Có thể gọi API để cập nhật currentUser nếu cần
+        GroupService.fetchUserInfo(userId: userId) { success, user, message in
+            DispatchQueue.main.async {
+                if success, let user = user {
+                    self.currentUser = user
+                    print("✅ Fetched user profile: \(user.name), role=\(user.role ?? "nil")") // 🟢 Log role
+                } else {
+                    print("❌ Failed to fetch user profile: \(message)")
+                    // Nếu thất bại, không đặt lại isAuthenticated để tránh đăng xuất nhầm
+                }
+            }
+        }
     }
+    
+    func fetchAllUsers(adminId: Int) {
+            AdminService.fetchUsers(adminId: adminId) { [weak self] success, users, message in
+                DispatchQueue.main.async {
+                    if success, let users = users {
+                        self?.allUsers = users
+                        print("✅ Fetched \(users.count) users")
+                    } else {
+                        print("❌ Failed to fetch users: \(message)")
+                    }
+                }
+            }
+        }
 }

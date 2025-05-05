@@ -87,7 +87,7 @@ struct TaskListView: View {
                             taskVM.isRefreshing = false
                         }
                     }) {
-                        Image(systemName: "heart.fill")
+                        Image(systemName: "lasso.badge.sparkles")
                         .foregroundColor(themeColor)
                     }
                 }

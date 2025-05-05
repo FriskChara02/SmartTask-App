@@ -24,5 +24,12 @@
 
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Mình cần vị trí của bạn để hiển thị thời tiết địa phương.</string>
+    
+        <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
+    
 </dict>
 </plist>

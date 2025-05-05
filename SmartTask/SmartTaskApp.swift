@@ -15,7 +15,7 @@ extension EnvironmentValues {
 
 @main
 struct SmartTaskApp: App {
-    @StateObject private var authVM = AuthViewModel()  // ✅ Quản lý trạng thái đăng nhập
+    @StateObject private var authVM: AuthViewModel  // ✅ Quản lý trạng thái đăng nhập
     @StateObject private var notificationsVM = NotificationsViewModel() // Khai báo trước
     @StateObject private var taskVM = TaskViewModel(notificationsVM: NotificationsViewModel(), userId: nil) // Khởi tạo với userId ban đầu là nil
     @StateObject private var categoryVM = CategoryViewModel()
@@ -25,14 +25,30 @@ struct SmartTaskApp: App {
     @StateObject private var calendarService = GoogleCalendarService.shared
     @StateObject private var eventVM: EventViewModel
     @StateObject private var weatherVM = WeatherViewModel()
+    @StateObject private var friendVM = FriendsViewModel()
+    @StateObject private var groupVM: GroupsViewModel
+    @StateObject private var chatVM = ChattingViewModel()
     
     @AppStorage("themeColor") private var themeColor: String = "Blue"
     
     // Danh sách màu để ánh xạ từ themeColor
     private let colors: [(name: String, color: Color)] = [
         ("Default", .gray),
-        ("Blue", .blue), ("Green", .green), ("Pink", .pink), ("Purple", .purple),
-        ("Red", .red), ("Black", .black), ("Yellow", .yellow), ("Orange", .orange)
+        ("Blue", .blue),
+        ("Green", .green),
+        ("Pink", .pink),
+        ("Purple", .purple),
+        ("Red", .red),
+        ("Black", .black),
+        ("Yellow", .yellow),
+        ("Orange", .orange),
+        ("Mint", .mint),
+        ("Teal", .teal),
+        ("Cyan", .cyan),
+        ("Indigo", .indigo),
+        ("Brown", .brown),
+        ("White", .white)
+
     ]
     
     // Tính toán màu từ themeColor
@@ -42,9 +58,15 @@ struct SmartTaskApp: App {
     
     // ✅ Khởi tạo thủ công các StateObject phụ thuộc lẫn nhau
     init() {
-        let googleAuthVM = GoogleAuthViewModel()
-        _googleAuthVM = StateObject(wrappedValue: googleAuthVM)
-        _eventVM = StateObject(wrappedValue: EventViewModel(googleAuthVM: googleAuthVM))
+        let authVMInstance = AuthViewModel()
+        let googleAuthVMInstance = GoogleAuthViewModel()
+        let eventVMInstance = EventViewModel(googleAuthVM: googleAuthVMInstance)
+        let groupVMInstance = GroupsViewModel(authVM: authVMInstance)
+        
+        _authVM = StateObject(wrappedValue: authVMInstance)
+        _googleAuthVM = StateObject(wrappedValue: googleAuthVMInstance)
+        _eventVM = StateObject(wrappedValue: eventVMInstance)
+        _groupVM = StateObject(wrappedValue: groupVMInstance)
     }
 
     var body: some Scene {
@@ -61,6 +83,9 @@ struct SmartTaskApp: App {
                 .environmentObject(googleAuthVM) // ✅ Truyền googleAuthVM
                 .environmentObject(calendarService)
                 .environmentObject(weatherVM)
+                .environmentObject(friendVM)
+                .environmentObject(groupVM)
+                .environmentObject(chatVM)
                 .onChange(of: authVM.currentUser) {
                     if let userId = authVM.currentUser?.id {
                         taskVM.userId = userId

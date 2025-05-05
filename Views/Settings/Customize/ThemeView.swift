@@ -15,7 +15,14 @@ struct ThemeView: View {
         ("Red", .red),
         ("Black", .black),
         ("Yellow", .yellow),
-        ("Orange", .orange)
+        ("Orange", .orange),
+        ("Mint", .mint),
+        ("Teal", .teal),
+        ("Cyan", .cyan),
+        ("Indigo", .indigo),
+        ("Brown", .brown),
+        ("White", .white)
+
     ]
     
     var body: some View {

@@ -15,7 +15,16 @@ struct ManageCategoriesView: View {
         ("red", .red),
         ("orange", .orange),
         ("yellow", .yellow),
-        ("green", .green)
+        ("green", .green),
+        ("mint", .mint),
+        ("teal", .teal),
+        ("cyan", .cyan),
+        ("indigo", .indigo),
+        ("pink", .pink),
+        ("brown", .brown),
+        ("gray", .gray),
+        ("Black", .black),
+        ("White", .white)
     ]
     
     var body: some View {

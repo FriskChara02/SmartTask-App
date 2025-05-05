@@ -1,3 +1,7 @@
+//  ProfileView.swift
+//  SmartTask
+//
+
 import SwiftUI
 import PhotosUI
 
@@ -8,12 +12,50 @@ struct ProfileView: View {
     @Environment(\.presentationMode) var presentationMode
     @EnvironmentObject var notificationsVM: NotificationsViewModel
     @EnvironmentObject var userVM: UserViewModel
+    @EnvironmentObject var friendVM: FriendsViewModel
+    @EnvironmentObject var groupVM: GroupsViewModel
+    @EnvironmentObject var chatVM: ChattingViewModel
     @Environment(\.themeColor) var themeColor
+
+    // Dữ liệu bạn bè từ API
+    @State private var friends: [Friend] = []
+    @State private var onlineFriendsCount: Int = 0
+    @State private var isLoadingFriends: Bool = false
+    @State private var errorMessage: String?
 
     var body: some View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 25) {
+                    // Icon Friend và nút Chatting
+                    HStack(spacing: 15) {
+                        // Icon Friend
+                        NavigationLink(destination: FriendsView()) {
+                            HStack(spacing: 8) {
+                                Image(systemName: "person.2.fill")
+                                    .foregroundColor(.green)
+                                    .frame(width: 30)
+                                Text("Friends (\(onlineFriendsCount) Online)")
+                                    .foregroundColor(.green)
+                                    .font(.headline)
+                                Circle()
+                                    .fill(.green)
+                                    .frame(width: 8, height: 8)
+                            }
+                        }
+                        
+                        Spacer()
+                        
+                        // Nút Chatting
+                        NavigationLink(destination: ChattingView()) {
+                            Image(systemName: "ellipsis.message.fill")
+                                .foregroundColor(themeColor)
+                                .frame(width: 30)
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+
                     avatarSection
                     userInfoSection
                     actionButtonsSection
@@ -58,9 +100,26 @@ struct ProfileView: View {
                     userVM.currentUser = user
                     userVM.loadUserDataForEditing(user: user)
                     print("DEBUG: Loaded user on appear - \(user)")
+                    fetchFriends(userId: user.id)
                 } else {
                     print("DEBUG: No user found in authVM on appear")
                 }
+            }
+            .overlay {
+                if isLoadingFriends {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: themeColor))
+                }
+            }
+            .alert(isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { if !$0 { errorMessage = nil } }
+            )) {
+                Alert(
+                    title: Text("Error"),
+                    message: Text(errorMessage ?? "Unknown error"),
+                    dismissButton: .default(Text("OK"))
+                )
             }
         }
     }
@@ -337,6 +396,7 @@ struct ProfileView: View {
             .font(.system(size: 18, weight: .semibold, design: .rounded))
             .foregroundColor(.white)
             .padding()
+            .contentShape(Rectangle())
             .frame(maxWidth: .infinity)
             .background(LinearGradient(gradient: Gradient(colors: [.green, .blue]), startPoint: .leading, endPoint: .trailing))
             .cornerRadius(25)
@@ -530,6 +590,22 @@ struct ProfileView: View {
         .padding(.horizontal, 20)
         .padding(.bottom, 30)
     }
+    
+    // MARK: - Fetch Friends
+    private func fetchFriends(userId: Int) {
+        isLoadingFriends = true
+        FriendService.fetchFriends(userId: userId) { success, friends, message in
+            DispatchQueue.main.async {
+                if success, let friends = friends {
+                    self.friends = friends
+                    self.onlineFriendsCount = friends.filter { $0.status == "online" }.count
+                } else {
+                    self.errorMessage = message
+                }
+                self.isLoadingFriends = false
+            }
+        }
+    }
 }
 
 // MARK: - DateFormatter
@@ -544,6 +620,9 @@ private let dateFormatter: DateFormatter = {
     let taskVM = TaskViewModel(notificationsVM: notificationsVM, userId: 7)
     let authVM = AuthViewModel()
     let userVM = UserViewModel(authVM: authVM)
+    let friendVM = FriendsViewModel()
+    let groupVM = GroupsViewModel(authVM: authVM)
+    let chatVM = ChattingViewModel()
 
     ProfileView()
         .environmentObject(authVM)
@@ -551,6 +630,9 @@ private let dateFormatter: DateFormatter = {
         .environmentObject(CategoryViewModel())
         .environmentObject(notificationsVM)
         .environmentObject(userVM)
+        .environmentObject(friendVM)
+        .environmentObject(groupVM)
+        .environmentObject(chatVM)
         .task {
             authVM.currentUser = UserModel(
                 id: 1,

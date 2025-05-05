@@ -3,7 +3,11 @@ import GoogleSignIn
 
 struct SettingsView: View {
     @EnvironmentObject var authVM: AuthViewModel
-    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel // ✅ Theo dõi trạng thái Google Calendar
+    @EnvironmentObject var googleAuthVM: GoogleAuthViewModel
+    @EnvironmentObject var friendVM: FriendsViewModel
+    @EnvironmentObject var groupVM: GroupsViewModel
+    @EnvironmentObject var chatVM: ChattingViewModel
+    
     
     var body: some View {
         NavigationView {
@@ -11,7 +15,32 @@ struct SettingsView: View {
                 // Section 1: Account
                 AccountSectionView()
                 
-                // Section 2: Customize
+                // Section 2: Social
+                Section(header: Text("Social ✧").font(.headline)) {
+                    NavigationLink(destination: FriendsView()) {
+                        HStack {
+                            Image(systemName: "person.2.fill")
+                                .foregroundColor(.purple)
+                            Text("Friends")
+                        }
+                    }
+                    NavigationLink(destination: GroupsView()) {
+                        HStack {
+                            Image(systemName: "person.3.fill")
+                                .foregroundColor(.blue)
+                            Text("Groups")
+                        }
+                    }
+                    NavigationLink(destination: ChattingView()) {
+                        HStack {
+                            Image(systemName: "ellipsis.message.fill")
+                                .foregroundColor(.green)
+                            Text("Chatting")
+                        }
+                    }
+                }
+                
+                // Section 3: Customize
                 Section(header: Text("Customize ✦").font(.headline)) {
                     NavigationLink(destination: ThemeView()) {
                         HStack {
@@ -47,7 +76,7 @@ struct SettingsView: View {
                     }
                 }
                 
-                // Section 3: Help and Policies
+                // Section 4: Help and Policies
                 Section(header: Text("Help and Policies ⋆˙⟡").font(.headline)) {
                     NavigationLink(destination: HelpView()) {
                         HStack {
@@ -72,7 +101,7 @@ struct SettingsView: View {
                     }
                 }
                 
-                // Section 4: About
+                // Section 5: About
                 Section(header: Text("About ᝰ.ᐟ").font(.headline)) {
                     NavigationLink(destination: SendFeedbackView()) {
                         HStack {
@@ -114,6 +143,38 @@ struct SettingsView: View {
             }
             .tint(.green)
             .navigationTitle("Settings ❀")
+        }
+        .onAppear {
+            if let userId = authVM.currentUser?.id {
+                print("DEBUG: SettingsView onAppear - fetching user info for userId=\(userId)")
+                if authVM.currentUser?.role == "admin" || authVM.currentUser?.role == "super_admin" {
+                    AdminService.fetchUsers(adminId: userId) { success, users, message in
+                        DispatchQueue.main.async {
+                            if success, let users = users {
+                                print("✅ Fetched \(users.count) users")
+                                if let currentUser = users.first(where: { $0.id == userId }) {
+                                    authVM.currentUser = currentUser
+                                }
+                            } else {
+                                print("❌ Failed to fetch users: \(message)")
+                            }
+                        }
+                    }
+                } else {
+                    GroupService.fetchUserInfo(userId: userId) { success, user, message in
+                        DispatchQueue.main.async {
+                            if success, let user = user {
+                                authVM.currentUser = user
+                                print("✅ Fetched user info: \(user.name), role=\(user.role ?? "nil")")
+                            } else {
+                                print("❌ Failed to fetch user info: \(message)")
+                            }
+                        }
+                    }
+                }
+            } else {
+                print("❌ No userId available for fetching user info")
+            }
         }
     }
 }
@@ -239,6 +300,9 @@ struct VisualEffectView: UIViewRepresentable {
     let authVM = AuthViewModel()
     let categoryVM = CategoryViewModel()
     let userVM = UserViewModel(authVM: authVM)
+    let friendVM = FriendsViewModel()
+    let groupVM = GroupsViewModel(authVM: authVM)
+    let chatVM = ChattingViewModel()
     
     SettingsView()
         .environmentObject(authVM)
@@ -247,4 +311,7 @@ struct VisualEffectView: UIViewRepresentable {
         .environmentObject(notificationsVM)
         .environmentObject(userVM)
         .environmentObject(GoogleAuthViewModel())
+        .environmentObject(friendVM)
+        .environmentObject(groupVM)
+        .environmentObject(chatVM)
 }
