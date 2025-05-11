@@ -25,11 +25,19 @@
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Mình cần vị trí của bạn để hiển thị thời tiết địa phương.</string>
     
-        <key>NSAppTransportSecurity</key>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Ứng dụng cần truy cập kho ảnh để bạn được chọn hình ảnh.</string>
+    
+    <key>NSPhotoLibraryAdditionsUsageDescription</key>
+    <string>Ứng dụng cần lưu ảnh vào kho ảnh của bạn để được lưu trữ hình ảnh.</string>
+    
+    <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
     
+    <key>UILaunchStoryboardName</key>
+    <string>Launch Screen</string>
 </dict>
 </plist>

@@ -88,7 +88,7 @@ struct ProfileView: View {
                         .padding(.vertical, 8)
                         .padding(.horizontal, 20)
                         .background(LinearGradient(gradient: Gradient(colors: [.cyan, .green]), startPoint: .leading, endPoint: .trailing))
-                        .cornerRadius(20)
+                        .cornerRadius(25)
                         .shadow(color: .primary.opacity(0.2), radius: 5, x: 0, y: 3)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .disabled(userVM.currentUser == nil)
@@ -167,23 +167,59 @@ struct ProfileView: View {
                     .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             }
             if userVM.isEditing {
-                PhotosPicker("Chọn Avatar", selection: $userVM.selectedPhoto, matching: .images)
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 16)
-                    .background(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing))
-                    .cornerRadius(20)
-                    .shadow(color: Color.primary.opacity(0.2), radius: 5, x: 0, y: 2)
-                    .onChange(of: userVM.selectedPhoto) {
-                        Task {
-                            if let data = try? await userVM.selectedPhoto?.loadTransferable(type: Data.self),
-                               let uiImage = UIImage(data: data) {
+                ZStack {
+                    PhotosPicker("Chọn Avatar", selection: $userVM.selectedPhoto, matching: .images)
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 16)
+                        .background(LinearGradient(gradient: Gradient(colors: [.blue, .purple]), startPoint: .leading, endPoint: .trailing))
+                        .cornerRadius(25)
+                        .shadow(color: Color.primary.opacity(0.2), radius: 5, x: 0, y: 2)
+                        .disabled(userVM.isUploadingAvatar)
+                        .onChange(of: userVM.selectedPhoto) {
+                            Task {
+                                guard let data = try? await userVM.selectedPhoto?.loadTransferable(type: Data.self),
+                                      let uiImage = UIImage(data: data) else {
+                                    userVM.errorMessage = "Không thể tải ảnh. Vui lòng chọn lại."
+                                    userVM.showError = true
+                                    return
+                                }
                                 userVM.avatarImage = uiImage
-                                userVM.uploadAvatar(image: uiImage)
+                                userVM.isUploadingAvatar = true
+                                userVM.uploadAvatar(image: uiImage) { success, message, avatarURL in
+                                    DispatchQueue.main.async {
+                                        userVM.isUploadingAvatar = false
+                                        if success, let avatarURL = avatarURL {
+                                            userVM.currentUser?.avatarURL = avatarURL
+                                            userVM.errorMessage = "Upload avatar thành công! 🎉"
+                                            userVM.showError = true
+                                        } else {
+                                            userVM.errorMessage = "Lỗi: \(message)"
+                                            userVM.showError = true
+                                        }
+                                    }
+                                }
                             }
                         }
+                    if userVM.isUploadingAvatar {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .padding()
+                            .background(Color.black.opacity(0.5))
+                            .cornerRadius(10)
                     }
+                }
+                .alert(isPresented: $userVM.showError) {
+                    Alert(
+                        title: Text(userVM.errorMessage?.contains("thành công") ?? false ? "Thành công" : "Lỗi"),
+                        message: Text(userVM.errorMessage ?? "Đã xảy ra lỗi không xác định"),
+                        dismissButton: .default(Text("OK")) {
+                            userVM.showError = false
+                            userVM.errorMessage = nil
+                        }
+                    )
+                }
             }
         }
         .padding(.top, 40)
@@ -204,7 +240,7 @@ struct ProfileView: View {
                     .foregroundColor(.red)
                     .padding()
                     .background(Color(.systemBackground))
-                    .cornerRadius(15)
+                    .cornerRadius(25)
                     .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
             }
         }
@@ -222,7 +258,11 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
@@ -232,7 +272,11 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
@@ -242,7 +286,11 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                         .frame(width: 200)
                     Button(userVM.showPassword ? "Ẩn ❀" : "Hiện ⏾") {
@@ -265,7 +313,11 @@ struct ProfileView: View {
                     .padding(.vertical, 6)
                     .padding(.horizontal, 12)
                     .background(themeColor)
-                    .cornerRadius(10)
+                    .cornerRadius(25)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 25)
+                            .stroke(themeColor, lineWidth: 1)
+                    )
                 }
                 if userVM.showPassword {
                     HStack(spacing: 10) {
@@ -283,14 +335,18 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 15)
             .background(Color.gray.opacity(0.05))
-            .cornerRadius(15)
+            .cornerRadius(25)
             .alert(isPresented: $userVM.showPasswordAlert) {
                 Alert(
                     title: Text("Thông báo"),
@@ -310,7 +366,11 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
@@ -320,7 +380,11 @@ struct ProfileView: View {
                         .labelsHidden()
                         .padding(8)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
@@ -330,7 +394,11 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
@@ -344,7 +412,7 @@ struct ProfileView: View {
             .padding(.horizontal, 20)
             .padding(.vertical, 15)
             .background(Color.gray.opacity(0.05))
-            .cornerRadius(15)
+            .cornerRadius(25)
 
             // VStack 3: Gender, Hobbies, Bio
             VStack(spacing: 15) {
@@ -359,7 +427,7 @@ struct ProfileView: View {
                     .pickerStyle(SegmentedPickerStyle())
                     .padding(5)
                     .background(Color(.systemBackground))
-                    .cornerRadius(12)
+                    .cornerRadius(25)
                     .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
@@ -369,7 +437,11 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
                 HStack(spacing: 10) {
@@ -379,14 +451,18 @@ struct ProfileView: View {
                         .textFieldStyle(PlainTextFieldStyle())
                         .padding(12)
                         .background(Color(.systemBackground))
-                        .cornerRadius(12)
+                        .cornerRadius(25)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 25)
+                                .stroke(themeColor, lineWidth: 1)
+                        )
                         .shadow(color: Color.primary.opacity(0.1), radius: 5, x: 0, y: 2)
                 }
             }
             .padding(.horizontal, 20)
             .padding(.vertical, 15)
             .background(Color.gray.opacity(0.05))
-            .cornerRadius(15)
+            .cornerRadius(25)
 
             Button("Lưu ❀") {
                 userVM.saveProfile {
@@ -439,7 +515,11 @@ struct ProfileView: View {
             }
             .padding()
             .background(Color(.systemBackground))
-            .cornerRadius(15)
+            .cornerRadius(25)
+            .overlay(
+                RoundedRectangle(cornerRadius: 25)
+                    .stroke(themeColor, lineWidth: 2)
+            )
             .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
 
@@ -491,7 +571,11 @@ struct ProfileView: View {
             }
             .padding()
             .background(Color(.systemBackground))
-            .cornerRadius(15)
+            .cornerRadius(25)
+            .overlay(
+                RoundedRectangle(cornerRadius: 25)
+                    .stroke(themeColor, lineWidth: 2)
+            )
             .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
 
@@ -532,7 +616,11 @@ struct ProfileView: View {
             }
             .padding()
             .background(Color(.systemBackground))
-            .cornerRadius(15)
+            .cornerRadius(25)
+            .overlay(
+                RoundedRectangle(cornerRadius: 25)
+                    .stroke(themeColor, lineWidth: 2)
+            )
             .shadow(color: Color.primary.opacity(0.1), radius: 8, x: 0, y: 4)
             .padding(.horizontal, 20)
         }

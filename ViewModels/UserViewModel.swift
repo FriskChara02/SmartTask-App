@@ -10,6 +10,9 @@ class UserViewModel: ObservableObject {
     @Published var avatarImage: UIImage? = nil
     @Published var showPasswordAlert: Bool = false
     @Published var alertMessage: String = ""
+    @Published var errorMessage: String?
+    @Published var showError: Bool = false
+    @Published var isUploadingAvatar: Bool = false
 
     // Các trường chỉnh sửa
     @Published var editedName = ""
@@ -23,8 +26,8 @@ class UserViewModel: ObservableObject {
     @Published var editedGender = ""
     @Published var editedHobbies = ""
     @Published var editedBio = ""
-    @Published var editedStatus = "offline" // Thêm: online, offline, idle, dnd, invisible
-    @Published var editedRole = "user" // Thêm: user, admin, super_admin
+    @Published var editedStatus = "offline" // online, offline, idle, dnd, invisible
+    @Published var editedRole = "user" // user, admin, super_admin
 
     private var authVM: AuthViewModel?
 
@@ -35,7 +38,7 @@ class UserViewModel: ObservableObject {
         if let user = currentUser {
             loadUserDataForEditing(user: user)
         }
-        // Lắng nghe thay đổi từ authVM (nếu cần)
+        
         if let auth = authVM {
             NotificationCenter.default.addObserver(forName: .didUpdateUser, object: auth, queue: .main) { [weak self] _ in
                 self?.currentUser = auth.currentUser
@@ -59,8 +62,9 @@ class UserViewModel: ObservableObject {
             editedGender = user.gender ?? ""
             editedHobbies = user.hobbies ?? ""
             editedBio = user.bio ?? ""
-            editedStatus = user.status ?? "offline" // Thêm từ schema
-            editedRole = user.role ?? "user" // Thêm từ schema
+            editedStatus = user.status ?? "offline"
+            editedRole = user.role ?? "user"
+            avatarImage = nil
         }
     }
 
@@ -264,18 +268,23 @@ class UserViewModel: ObservableObject {
         }
 
     // Upload avatar
-    func uploadAvatar(image: UIImage) {
+    func uploadAvatar(image: UIImage, completion: @escaping (Bool, String, String?) -> Void) {
         guard let userId = currentUser?.id else {
-            alertMessage = "Không tìm thấy người dùng"
-            showPasswordAlert = true
+            let message = "Không tìm thấy người dùng"
+            errorMessage = message
+            showError = true
+            print("DEBUG: ❌ \(message)")
+            completion(false, message, nil)
             return
         }
         // Kiểm tra kích thước ảnh (giới hạn 5MB)
         guard let imageData = image.jpegData(compressionQuality: 0.8),
               imageData.count <= 5 * 1024 * 1024 else {
-            alertMessage = "Ảnh quá lớn (giới hạn 5MB)"
-            showPasswordAlert = true
+            let message = "Ảnh quá lớn (giới hạn 5MB)"
+            errorMessage = message
+            showError = true
             print("DEBUG: ❌ Ảnh quá lớn: \(image.jpegData(compressionQuality: 0.8)?.count ?? 0) bytes")
+            completion(false, message, nil)
             return
         }
 
@@ -283,13 +292,14 @@ class UserViewModel: ObservableObject {
             DispatchQueue.main.async {
                 if success, let url = avatarURL {
                     self?.currentUser?.avatarURL = url
-                    self?.authVM?.currentUser?.avatarURL = url // Đồng bộ với authVM
+                    self?.authVM?.currentUser?.avatarURL = url
                     print("DEBUG: ✅ Upload avatar thành công: \(url)")
                 } else {
-                    self?.alertMessage = message
-                    self?.showPasswordAlert = true
                     print("DEBUG: ❌ Upload avatar thất bại - \(message)")
                 }
+                self?.errorMessage = message
+                self?.showError = true
+                completion(success, message, avatarURL)
             }
         }
     }

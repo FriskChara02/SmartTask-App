@@ -17,6 +17,24 @@ struct TaskListGroupView: View {
     private let groupId: Int
     @State private var taskViewModels: [Int: TaskListViewModel] = [:]
     
+    private let colors: [(name: String, color: Color)] = [
+        ("blue", .blue),
+        ("purple", .purple),
+        ("red", .red),
+        ("orange", .orange),
+        ("yellow", .yellow),
+        ("green", .green),
+        ("mint", .mint),
+        ("teal", .teal),
+        ("cyan", .cyan),
+        ("indigo", .indigo),
+        ("pink", .pink),
+        ("brown", .brown),
+        ("gray", .gray),
+        ("Black", .black),
+        ("White", .white)
+    ]
+    
     init(groupId: Int) {
         self.groupId = groupId
     }
@@ -155,13 +173,16 @@ struct TaskListGroupView: View {
             },
             label: {
                 HStack {
-                    Image(systemName: "person.3")
+                    Image(systemName: groupVM.groups.first(where: { $0.id == groupId })?.icon ?? "person.3")
                         .font(.system(size: 20))
                         .foregroundColor(.white)
                         .padding(10)
                         .background(
                             LinearGradient(
-                                gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
+                                gradient: Gradient(colors: [
+                                    (groupVM.groups.first(where: { $0.id == groupId })?.color != nil ? colors.first(where: { $0.name == groupVM.groups.first(where: { $0.id == groupId })?.color })?.color : themeColor) ?? themeColor,
+                                    ((groupVM.groups.first(where: { $0.id == groupId })?.color != nil ? colors.first(where: { $0.name == groupVM.groups.first(where: { $0.id == groupId })?.color })?.color : themeColor) ?? themeColor).opacity(0.8)
+                                ]),
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -180,14 +201,6 @@ struct TaskListGroupView: View {
         )
         .padding()
         .background(
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    themeColor.opacity(0.1),
-                    Color(UIColor.systemBackground).opacity(0.95)
-                ]),
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
         )
         .cornerRadius(25)
         .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
@@ -279,8 +292,8 @@ struct TaskGroupRow: View {
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [
-                    themeColor.opacity(0.2),
-                    Color(UIColor.systemBackground).opacity(0.95)
+                    themeColor.opacity(0.1),
+                    themeColor.opacity(0.1)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing

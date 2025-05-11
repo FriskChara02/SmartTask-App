@@ -14,12 +14,65 @@ struct GroupsView: View {
     @EnvironmentObject var chatVM: ChattingViewModel
     @Environment(\.themeColor) var themeColor
     @Environment(\.colorScheme) var colorScheme
+    
     @State private var isShowingManageGroups = false
+    @State private var searchText = ""
+    @State private var isSearchFieldVisible = false
+    
+    private let colors: [(name: String, color: Color)] = [
+        ("blue", .blue),
+        ("purple", .purple),
+        ("red", .red),
+        ("orange", .orange),
+        ("yellow", .yellow),
+        ("green", .green),
+        ("mint", .mint),
+        ("teal", .teal),
+        ("cyan", .cyan),
+        ("indigo", .indigo),
+        ("pink", .pink),
+        ("brown", .brown),
+        ("gray", .gray),
+        ("Black", .black),
+        ("White", .white)
+    ]
+    
+    private var filteredGroups: [GroupModel] {
+            if searchText.isEmpty {
+                return groupVM.groups
+            } else {
+                return groupVM.groups.filter { $0.name.lowercased().contains(searchText.lowercased()) }
+            }
+        }
     
     var body: some View {
         NavigationStack {
             ScrollView(.vertical, showsIndicators: false) {
                 VStack(spacing: 16) {
+                    if isSearchFieldVisible {
+                            TextField("Tìm kiếm nhóm ⟢", text: $searchText)
+                                .font(.system(size: 16, weight: .medium, design: .rounded))
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 16)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            Color(UIColor.systemFill),
+                                            Color(UIColor.systemBackground)
+                                        ]),
+                                        startPoint: .top,
+                                        endPoint: .bottom
+                                    )
+                                )
+                                .clipShape(RoundedRectangle(cornerRadius: 25))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 25)
+                                        .stroke(themeColor.opacity(0.2), lineWidth: 1)
+                                )
+                                .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                                .padding(.horizontal)
+                        }
+                    
                     if let errorMessage = groupVM.errorMessage {
                         Text(errorMessage)
                             .font(.system(size: 14, design: .rounded))
@@ -29,13 +82,13 @@ struct GroupsView: View {
                     if groupVM.isLoading {
                         ProgressView()
                             .padding()
-                    } else if groupVM.groups.isEmpty {
-                        Text("「 ✦ No groups available ✦ 」")
+                    } else if filteredGroups.isEmpty {
+                        Text("「 ✦ Không tìm thấy nhóm ✦ 」")
                             .font(.system(size: 16, design: .rounded))
                             .foregroundColor(.gray)
                             .padding()
                     } else {
-                        ForEach(groupVM.groups) { group in
+                        ForEach(filteredGroups) { group in
                             NavigationLink(destination: TaskListGroupView(groupId: group.id)) {
                                 HStack {
                                     Image(systemName: group.icon ?? "person.3")
@@ -44,7 +97,10 @@ struct GroupsView: View {
                                         .padding(10)
                                         .background(
                                             LinearGradient(
-                                                gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
+                                                gradient: Gradient(colors: [
+                                                    (group.color != nil ? colors.first(where: { $0.name == group.color })?.color : themeColor) ?? themeColor,
+                                                    ((group.color != nil ? colors.first(where: { $0.name == group.color })?.color : themeColor) ?? themeColor).opacity(0.8)
+                                                ]),
                                                 startPoint: .leading,
                                                 endPoint: .trailing
                                             )
@@ -100,23 +156,47 @@ struct GroupsView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { isShowingManageGroups = true }) {
-                        Image(systemName: "person.2.badge.gearshape")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(8)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                    HStack(spacing: 8) {
+                        Button(action: { isShowingManageGroups = true }) {
+                            Image(systemName: "person.2.badge.gearshape")
+                                .font(.system(size: 14, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(8)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
                                 )
-                            )
-                            .clipShape(Circle())
-                            .shadow(color: themeColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                                .clipShape(Circle())
+                                .shadow(color: themeColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                        }
+                        .scaleEffect(isShowingManageGroups ? 0.95 : 1.0)
+                        .animation(.spring(), value: isShowingManageGroups)
+                        
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                isSearchFieldVisible.toggle()
+                            }
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .clipShape(Circle())
+                                .shadow(color: themeColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                        }
+                        .scaleEffect(isSearchFieldVisible ? 1.1 : 1.0)
+                        .animation(.spring(), value: isSearchFieldVisible)
                     }
-                    .scaleEffect(isShowingManageGroups ? 0.95 : 1.0)
-                    .animation(.spring(), value: isShowingManageGroups)
                 }
             }
             .sheet(isPresented: $isShowingManageGroups) {

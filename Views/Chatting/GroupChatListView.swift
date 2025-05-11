@@ -90,6 +90,24 @@ struct GroupRowView: View {
     @EnvironmentObject var groupVM: GroupsViewModel
     @Environment(\.colorScheme) var colorScheme
     
+    private let colors: [(name: String, color: Color)] = [
+        ("blue", .blue),
+        ("purple", .purple),
+        ("red", .red),
+        ("orange", .orange),
+        ("yellow", .yellow),
+        ("green", .green),
+        ("mint", .mint),
+        ("teal", .teal),
+        ("cyan", .cyan),
+        ("indigo", .indigo),
+        ("pink", .pink),
+        ("brown", .brown),
+        ("gray", .gray),
+        ("Black", .black),
+        ("White", .white)
+    ]
+    
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: group.icon ?? "person.3")
@@ -98,7 +116,10 @@ struct GroupRowView: View {
                 .padding(10)
                 .background(
                     LinearGradient(
-                        gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
+                        gradient: Gradient(colors: [
+                            (group.color != nil ? colors.first(where: { $0.name == group.color })?.color : themeColor) ?? themeColor,
+                            ((group.color != nil ? colors.first(where: { $0.name == group.color })?.color : themeColor) ?? themeColor).opacity(0.8)
+                        ]),
                         startPoint: .leading,
                         endPoint: .trailing
                     )

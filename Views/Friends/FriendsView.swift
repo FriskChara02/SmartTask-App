@@ -613,7 +613,7 @@ struct FriendRow: View {
                 .frame(width: 12, height: 12)
 
             // Chat Button
-            NavigationLink(destination: ChattingView()) {
+            NavigationLink(destination: PrivateChatView(friend: friend)) {
                 Image(systemName: "ellipsis.message.fill")
                     .font(.system(size: 16))
                     .foregroundColor(themeColor)

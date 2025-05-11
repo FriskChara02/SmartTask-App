@@ -2,25 +2,34 @@ import Foundation
 
 class NotificationsViewModel: ObservableObject {
     @Published var notifications: [NotificationsModel] = []
+    @Published var unreadCount: Int = 0
     
     private let baseURL = "http://localhost/SmartTask_API"
     
     // Lấy tất cả thông báo từ API
-    func fetchNotifications() {
-        guard let url = URL(string: "\(baseURL)/notifications.php") else { return }
+    func fetchNotifications(userId: Int) {
+        guard let url = URL(string: "\(baseURL)/notifications.php?user_id=\(userId)") else {
+            return
+        }
         
         URLSession.shared.dataTask(with: url) { data, response, error in
-            if let data = data {
-                do {
-                    let decoder = JSONDecoder()
-                    decoder.dateDecodingStrategy = .iso8601
-                    let decoded = try decoder.decode([NotificationsModel].self, from: data)
-                    DispatchQueue.main.async {
-                        self.notifications = decoded
-                    }
-                } catch {
-                    print("Error decoding notifications: \(error)")
+            if error != nil {
+                return
+            }
+            guard let data = data, !data.isEmpty else {
+                return
+            }
+            do {
+                let decoder = JSONDecoder()
+                decoder.dateDecodingStrategy = .iso8601
+                let decoded = try decoder.decode([NotificationsModel].self, from: data)
+                DispatchQueue.main.async {
+                    self.notifications = decoded
+                    self.updateUnreadCount()
+                    print("✅ Fetched \(decoded.count) notifications")
                 }
+            } catch {
+                return
             }
         }.resume()
     }
@@ -39,6 +48,11 @@ class NotificationsViewModel: ObservableObject {
         
         print("Task ID trong thông báo: \(String(describing: task.id))")
         
+        DispatchQueue.main.async {
+            self.notifications.append(newNotification)
+            self.updateUnreadCount()
+        }
+        
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -53,20 +67,29 @@ class NotificationsViewModel: ObservableObject {
             URLSession.shared.dataTask(with: request) { data, response, error in
                 if let error = error {
                     print("Error adding notification: \(error)")
+                    // Xóa local notification nếu server thất bại
+                    DispatchQueue.main.async {
+                        self.notifications.removeAll { $0.id == newNotification.id }
+                    }
                     return
                 }
                 if let data = data, let responseString = String(data: data, encoding: .utf8) {
                     print("Response từ server:", responseString)
                 }
                 if let httpResponse = response as? HTTPURLResponse,
-                   httpResponse.statusCode == 201 {
+                   httpResponse.statusCode != 201 {
+                    // Xóa local notification nếu server thất bại
                     DispatchQueue.main.async {
-                        self.notifications.append(newNotification)
+                        self.notifications.removeAll { $0.id == newNotification.id }
                     }
                 }
             }.resume()
         } catch {
             print("Error encoding notification: \(error)")
+            // Xóa local notification nếu encode thất bại
+            DispatchQueue.main.async {
+                self.notifications.removeAll { $0.id == newNotification.id }
+            }
         }
     }
     
@@ -86,6 +109,7 @@ class NotificationsViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     if let index = self?.notifications.firstIndex(where: { $0.id == notificationId }) {
                         self?.notifications[index].isRead = true
+                        self?.updateUnreadCount()
                     }
                 }
             }
@@ -103,6 +127,7 @@ class NotificationsViewModel: ObservableObject {
             if error == nil {
                 DispatchQueue.main.async {
                     self?.notifications.indices.forEach { self?.notifications[$0].isRead = true }
+                    self?.updateUnreadCount()
                 }
             }
         }.resume()
@@ -119,6 +144,7 @@ class NotificationsViewModel: ObservableObject {
             if error == nil {
                 DispatchQueue.main.async {
                     self?.notifications.removeAll { $0.id == notificationId }
+                    self?.updateUnreadCount()
                 }
             }
         }.resume()
@@ -139,13 +165,13 @@ class NotificationsViewModel: ObservableObject {
             if error == nil {
                 DispatchQueue.main.async {
                     self?.notifications.removeAll { ids.contains($0.id) }
+                    self?.updateUnreadCount()
                 }
             }
         }.resume()
     }
     
-    // Đếm số thông báo chưa đọc
-    var unreadCount: Int {
-        notifications.filter { !$0.isRead }.count
+    func updateUnreadCount() {
+        unreadCount = notifications.filter { !$0.isRead }.count
     }
 }

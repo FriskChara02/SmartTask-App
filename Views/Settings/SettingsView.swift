@@ -8,7 +8,6 @@ struct SettingsView: View {
     @EnvironmentObject var groupVM: GroupsViewModel
     @EnvironmentObject var chatVM: ChattingViewModel
     
-    
     var body: some View {
         NavigationView {
             List {
@@ -36,6 +35,15 @@ struct SettingsView: View {
                             Image(systemName: "ellipsis.message.fill")
                                 .foregroundColor(.green)
                             Text("Chatting")
+                        }
+                    }
+                    if authVM.currentUser?.role == "super_admin" {
+                        NavigationLink(destination: AdminPanelView()) {
+                            HStack {
+                                Image(systemName: "person.badge.shield.checkmark.fill")
+                                    .foregroundColor(.purple)
+                                Text("Admin Panel")
+                            }
                         }
                     }
                 }
@@ -136,7 +144,7 @@ struct SettingsView: View {
                             .foregroundColor(.gray)
                         Text("Version")
                         Spacer()
-                        Text("0.8.1")
+                        Text("1.0.2")
                             .foregroundColor(.gray)
                     }
                 }

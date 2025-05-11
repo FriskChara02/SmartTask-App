@@ -40,9 +40,11 @@ struct TaskListView: View {
             // Cập nhật userId từ authVM trước khi fetch
             if let userId = authVM.currentUser?.id {
                 taskVM.userId = userId
+                notificationsVM.fetchNotifications(userId: userId)
+                notificationsVM.updateUnreadCount()
+                taskVM.fetchTasks()
             }
             categoryVM.fetchCategories()
-            taskVM.fetchTasks() // Gọi fetchTasks sau khi đảm bảo userId đã được set
         }
         .onChange(of: authVM.currentUser) { oldUser, newUser in
             if let userId = newUser?.id {

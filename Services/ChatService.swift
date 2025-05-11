@@ -24,8 +24,6 @@ struct ChatService {
                 return
             }
 
-            print("DEBUG: Fetch World Messages Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
-
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let success = json["success"] as? Bool,
@@ -35,7 +33,7 @@ struct ChatService {
                             guard let messageId = dict["message_id"] as? Int,
                                   let userId = dict["user_id"] as? Int,
                                   let name = dict["name"] as? String,
-                                  let content = dict["content"] as? String,
+                                  let content = dict["content"] as? String ?? nil,
                                   let timestampString = dict["timestamp"] as? String else {
                                 print("❌ Lỗi parse world message: Missing required fields in \(dict)")
                                 return nil
@@ -78,7 +76,8 @@ struct ChatService {
                     completion(false, nil, "Phản hồi không hợp lệ!")
                 }
             } catch {
-                print("❌ Lỗi parse JSON fetchWorldMessages: \(error.localizedDescription)")
+                print("❌ Lỗi parse JSON fetchWorldMessages: \(error)")
+                print("DEBUG: Raw Response Data: \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
                 completion(false, nil, "Lỗi parse JSON: \(error.localizedDescription)")
             }
         }.resume()
@@ -97,8 +96,6 @@ struct ChatService {
                 completion(false, nil, "Lỗi kết nối API!")
                 return
             }
-
-            print("DEBUG: Fetch Private Messages Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
 
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -172,8 +169,6 @@ struct ChatService {
                 return
             }
 
-            print("DEBUG: Fetch Group Messages Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
-
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let success = json["success"] as? Bool,
@@ -231,6 +226,85 @@ struct ChatService {
             }
         }.resume()
     }
+    
+    // 🟢 Lấy tin nhắn SmartTaskChat
+    static func fetchSmartTaskMessages(userId: Int, completion: @escaping (Bool, [ChatMessage]?, String) -> Void) {
+        let url = URL(string: baseURL + "chat.php?type=smarttask&user_id=\(userId)")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            guard let data = data, error == nil else {
+                print("❌ Lỗi kết nối API fetchSmartTaskMessages: \(error?.localizedDescription ?? "Không rõ")")
+                completion(false, nil, "Lỗi kết nối API!")
+                return
+            }
+
+            do {
+                if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   let success = json["success"] as? Bool,
+                   let message = json["message"] as? String {
+                    if success, let messagesData = json["data"] as? [[String: Any]] {
+                        let messages = messagesData.compactMap { dict -> ChatMessage? in
+                            guard let messageId = dict["message_id"] as? Int,
+                                  let userId = dict["user_id"] as? Int,
+                                  let name = dict["name"] as? String,
+                                  let timestampString = dict["timestamp"] as? String else {
+                                print("❌ Lỗi parse smarttask message: Missing required fields in \(dict)")
+                                return nil
+                            }
+                            guard let timestamp = ChatMessage.dateFormatter.date(from: timestampString) else {
+                                print("❌ Lỗi parse timestamp '\(timestampString)' in smarttask message: \(dict)")
+                                return nil
+                            }
+                            return ChatMessage(
+                                id: messageId * 2 + (dict["is_system_message"] as? Int ?? 0),
+                                messageId: messageId,
+                                userId: userId,
+                                name: name,
+                                avatarURL: dict["avatar_url"] as? String,
+                                content: dict["content"] as? String ?? "Không có nội dung",
+                                timestamp: timestamp,
+                                isEdited: {
+                                    if let value = dict["is_edited"] {
+                                        if let intValue = value as? Int { return intValue == 1 }
+                                        if let strValue = value as? String { return strValue == "1" }
+                                    }
+                                    return false
+                                }(),
+                                isDeleted: {
+                                    if let value = dict["is_deleted"] {
+                                        if let intValue = value as? Int { return intValue == 1 }
+                                        if let strValue = value as? String { return strValue == "1" }
+                                    }
+                                    return false
+                                }(),
+                                isSystemMessage: {
+                                    if let value = dict["is_system_message"] {
+                                        if let intValue = value as? Int { return intValue == 1 }
+                                        if let strValue = value as? String { return strValue == "1" }
+                                    }
+                                    return false
+                                }()
+                            )
+                        }
+                        print("✅ Parsed \(messages.count) smarttask messages")
+                        completion(true, messages, message)
+                    } else {
+                        completion(false, nil, message)
+                    }
+                } else {
+                    print("❌ Phản hồi không phải JSON object")
+                    completion(false, nil, "Phản hồi không hợp lệ!")
+                }
+            } catch {
+                print("❌ Lỗi parse JSON fetchSmartTaskMessages: \(error)")
+                print("DEBUG: Raw Response Data: \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
+                completion(false, nil, "Lỗi parse JSON: \(error.localizedDescription)")
+            }
+        }.resume()
+    }
 
     // 🟢 Kiểm tra giới hạn tin nhắn với người lạ
     static func checkMessageLimit(userId: Int, receiverId: Int, completion: @escaping (Bool, Int, String) -> Void) {
@@ -245,8 +319,6 @@ struct ChatService {
                 completion(false, 0, "Lỗi kết nối API!")
                 return
             }
-
-            print("DEBUG: Check Message Limit Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
 
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -292,7 +364,6 @@ struct ChatService {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: parameters, options: [])
             request.httpBody = jsonData
-            print("DEBUG: Send Message Request Body = \(String(data: jsonData, encoding: .utf8) ?? "Không có dữ liệu")")
         } catch {
             print("❌ Lỗi tạo JSON sendMessage: \(error.localizedDescription)")
             completion(false, "Lỗi tạo JSON!")
@@ -305,14 +376,22 @@ struct ChatService {
                 completion(false, "Lỗi kết nối API!")
                 return
             }
-
-            print("DEBUG: Send Message Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
+            
+            if data.isEmpty {
+                print("❌ Phản hồi API rỗng trong sendMessage")
+                completion(false, "Phản hồi API rỗng!")
+                return
+            }
 
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                    let success = json["success"] as? Bool,
                    let message = json["message"] as? String {
-                    completion(success, message)
+                    if success, type == "smarttask", let data = json["data"] as? [String: Any], let response = data["response"] as? String {
+                        completion(true, response)
+                    } else {
+                        completion(success, message)
+                    }
                 } else {
                     print("❌ Phản hồi không phải JSON object")
                     completion(false, "Phản hồi không hợp lệ!")
@@ -344,7 +423,6 @@ struct ChatService {
         do {
             let jsonData = try JSONSerialization.data(withJSONObject: parameters, options: [])
             request.httpBody = jsonData
-            print("DEBUG: Manage Message Request Body = \(String(data: jsonData, encoding: .utf8) ?? "Không có dữ liệu")")
         } catch {
             print("❌ Lỗi tạo JSON manageMessage: \(error.localizedDescription)")
             completion(false, "Lỗi tạo JSON!")
@@ -357,8 +435,6 @@ struct ChatService {
                 completion(false, "Lỗi kết nối API!")
                 return
             }
-
-            print("DEBUG: Manage Message Response - userId: \(userId), messageId: \(messageId), type: \(type), action: \(action), Response: \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
 
             do {
                 if let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
@@ -389,8 +465,6 @@ struct ChatService {
                 completion(false, nil, "Lỗi kết nối API!")
                 return
             }
-
-            print("DEBUG: Fetch Banned Users Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
 
             do {
                 let dateFormatter = DateFormatter()

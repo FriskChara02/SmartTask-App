@@ -14,6 +14,7 @@ struct WorldChatView: View {
     @Environment(\.colorScheme) var colorScheme
     @State private var messageText: String = ""
     @State private var showEmojiPicker: Bool = false
+    @State private var isSearchFieldVisible = false
     
     var body: some View {
         NavigationStack {
@@ -30,6 +31,34 @@ struct WorldChatView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    //TextField tìm kiếm
+                    if isSearchFieldVisible {
+                        TextField("Tìm kiếm tin nhắn ⟢", text: Binding(
+                            get: { chatVM.searchText ?? "" },
+                            set: { chatVM.searchText = $0 }
+                        ))
+                            .font(.system(size: 16, weight: .medium, design: .rounded))
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 16)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(UIColor.systemFill),
+                                        Color(UIColor.systemBackground)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 25))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(themeColor.opacity(0.2), lineWidth: 1)
+                            )
+                            .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                            .padding(.horizontal)
+                    }
+                    
                     MessageListView(
                         viewModel: chatVM,
                         selectedTab: .world,
@@ -48,23 +77,48 @@ struct WorldChatView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: refreshMessages) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.white)
-                            .padding(6)
-                            .background(
-                                LinearGradient(
-                                    gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
-                                    startPoint: .leading,
-                                    endPoint: .trailing
+                    HStack(spacing: 8) {
+                        Button(action: refreshMessages) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
                                 )
-                            )
-                            .clipShape(Circle())
-                            .shadow(color: themeColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                                .clipShape(Circle())
+                                .shadow(color: themeColor.opacity(0.3), radius: 4, x: 0, y: 2)
+                        }
+                        .scaleEffect(chatVM.isLoading ? 0.9 : 1.0)
+                        .animation(.spring(), value: chatVM.isLoading)
+                        
+                        //Nút kính lúp
+                        Button(action: {
+                            withAnimation(.spring()) {
+                                isSearchFieldVisible.toggle()
+                            }
+                        }) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.white)
+                                .padding(6)
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [themeColor, themeColor.opacity(0.8)]),
+                                        startPoint: .leading,
+                                        endPoint: .trailing
+                                    )
+                                )
+                                .clipShape(Circle())
+                                .shadow(color: themeColor.opacity(0.3), radius: 2, x: 0, y: 1)
+                        }
+                        .scaleEffect(isSearchFieldVisible ? 1.1 : 1.0)
+                        .animation(.spring(), value: isSearchFieldVisible)
                     }
-                    .scaleEffect(chatVM.isLoading ? 0.9 : 1.0)
-                    .animation(.spring(), value: chatVM.isLoading)
                 }
             }
             .alert(isPresented: $chatVM.showAlert) {

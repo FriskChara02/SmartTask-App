@@ -20,14 +20,14 @@ struct ChattingView: View {
         case world = "General ✦"
         case privateChat = "Chats ❀"
         case group = "Groups ⟢"
-        case ai = "AI"
+        case smarttaskchat = "✦SmartTask✦"
         
         var icon: String {
             switch self {
             case .world: return "globe"
             case .privateChat: return "person.2"
             case .group: return "person.3"
-            case .ai: return "sparkles"
+            case .smarttaskchat: return "sparkles"
             }
         }
     }
@@ -64,11 +64,11 @@ struct ChattingView: View {
                     }
                     .tag(ChatTab.group)
                 
-                AIChatView()
+                SmartTaskChatView()
                     .tabItem {
-                        Label(ChatTab.ai.rawValue, systemImage: ChatTab.ai.icon)
+                        Label(ChatTab.smarttaskchat.rawValue, systemImage: ChatTab.smarttaskchat.icon)
                     }
-                    .tag(ChatTab.ai)
+                    .tag(ChatTab.smarttaskchat)
             }
             .accentColor(themeColor)
             .environmentObject(authVM)
@@ -108,45 +108,47 @@ struct MessageListView: View {
     @Environment(\.colorScheme) var colorScheme
     
     var messages: [ChatMessage] {
+        let allMessages: [ChatMessage]
         switch selectedTab {
         case .world:
-            return viewModel.worldMessages
+            allMessages = viewModel.worldMessages
         case .privateChat:
-            return viewModel.privateMessages
+            allMessages = viewModel.privateMessages
         case .group:
-            return viewModel.groupMessages
-        case .ai:
-            return []
+            allMessages = viewModel.groupMessages
+        case .smarttaskchat:
+            allMessages = viewModel.smartTaskMessages
         }
+        
+        if let searchText = viewModel.searchText, !searchText.isEmpty {
+            return allMessages.filter { $0.content?.lowercased().contains(searchText.lowercased()) ?? false }
+        }
+        return allMessages
     }
     
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.vertical, showsIndicators: false) {
                 LazyVStack(spacing: 12) {
-                    if selectedTab == .ai {
-                        VStack {
-                            Spacer()
-                            Text("Chức năng Chat với AI chưa được triển khai ^^")
-                                .font(.system(size: 16, weight: .medium, design: .rounded))
-                                .foregroundColor(.secondary)
-                                .padding()
-                            Spacer()
-                        }
-                    } else {
-                        ForEach(messages) { message in
-                            MessageRow(
-                                message: message,
-                                isCurrentUser: message.userId == userId,
-                                viewModel: viewModel,
-                                selectedTab: selectedTab
-                            )
-                            .id(message.id)
-                            .padding(.horizontal)
-                        }
+                    ForEach(messages, id: \.id) { message in
+                        MessageRow(
+                            message: message,
+                            isCurrentUser: message.userId == userId,
+                            viewModel: viewModel,
+                            selectedTab: selectedTab
+                        )
+                        .id(message.id)
+                        .padding(.horizontal)
                     }
                 }
                 .padding(.vertical)
+                .onAppear {
+                    if let lastMessage = messages.last {
+                        withAnimation(.easeOut(duration: 0.3)) {
+                            proxy.scrollTo(lastMessage.id, anchor: .bottom)
+                        }
+                    }
+                }
             }
             .onChange(of: viewModel.worldMessages) { _, _ in
                 scrollToBottom(proxy: proxy, messages: viewModel.worldMessages, tab: .world)
@@ -156,6 +158,9 @@ struct MessageListView: View {
             }
             .onChange(of: viewModel.groupMessages) { _, _ in
                 scrollToBottom(proxy: proxy, messages: viewModel.groupMessages, tab: .group)
+            }
+            .onChange(of: viewModel.smartTaskMessages) { _, _ in
+                scrollToBottom(proxy: proxy, messages: viewModel.smartTaskMessages, tab: .smarttaskchat)
             }
             .background(
                 LinearGradient(
@@ -320,8 +325,8 @@ struct MessageRow: View {
             return "private"
         case .group:
             return "group"
-        case .ai:
-            return ""
+        case .smarttaskchat:
+            return "smarttask"
         }
     }
     
@@ -346,7 +351,7 @@ struct MessageRow: View {
                             .clipShape(ChatBubbleShape(isCurrentUser: true))
                             .shadow(color: themeColor.opacity(0.3), radius: 4, x: 0, y: 2)
                     } else {
-                        Text(message.content)
+                        Text(message.content ?? "Không có nội dung")
                             .font(.system(size: 16, weight: .medium, design: .rounded))
                             .padding(12)
                             .background(
@@ -370,7 +375,7 @@ struct MessageRow: View {
                 AsyncImage(url: URL(string: message.avatarURL ?? "")) { image in
                     image.resizable().scaledToFill()
                 } placeholder: {
-                    Image(systemName: "person.circle.fill")
+                    Image(systemName: selectedTab == .smarttaskchat ? "sparkles" : "person.circle.fill")
                         .foregroundColor(.gray)
                 }
                 .frame(width: 40, height: 40)
@@ -404,14 +409,14 @@ struct MessageRow: View {
                             .clipShape(ChatBubbleShape(isCurrentUser: false))
                             .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
                     } else {
-                        Text(message.content)
+                        Text(message.content ?? "Không có nội dung")
                             .font(.system(size: 16, weight: .medium, design: .rounded))
                             .padding(12)
                             .background(
-                                LinearGradient(
+                                LinearGradient( // Chỗ thay đổi màu cho message
                                     gradient: Gradient(colors: [
                                         Color(UIColor.systemFill),
-                                        Color(UIColor.systemBackground)
+                                        Color(UIColor.systemFill)
                                     ]),
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
@@ -453,7 +458,7 @@ struct MessageRow: View {
                     Label("Thu hồi ♺", systemImage: "trash")
                 }
                 Button(action: {
-                    editedContent = message.content
+                    editedContent = message.content ?? "Không có nội dung"
                     showEditAlert = true
                 }) {
                     Label("Chỉnh sửa ᝰ.ᐟ", systemImage: "pencil")

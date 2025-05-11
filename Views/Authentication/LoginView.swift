@@ -52,7 +52,11 @@ struct LoginView: View {
                             }
                             .padding(.horizontal)
                             .background(Color(UIColor.systemBackground).opacity(0.95))
-                            .cornerRadius(15)
+                            .cornerRadius(25)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(themeColor, lineWidth: 2)
+                            )
                             .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
                             .padding(.horizontal)
                             
@@ -68,7 +72,11 @@ struct LoginView: View {
                             }
                             .padding(.horizontal)
                             .background(Color(UIColor.systemBackground).opacity(0.95))
-                            .cornerRadius(15)
+                            .cornerRadius(25)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(themeColor, lineWidth: 2)
+                            )
                             .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
                             .padding(.horizontal)
                             
@@ -86,7 +94,7 @@ struct LoginView: View {
                                         )
                                     )
                                     .foregroundColor(.white)
-                                    .cornerRadius(15)
+                                    .cornerRadius(25)
                                     .shadow(color: themeColor.opacity(0.3), radius: 4, x: 0, y: 2)
                                     .scaleEffect(authVM.isAuthenticated ? 0.95 : 1.0)
                             }
@@ -102,7 +110,7 @@ struct LoginView: View {
                                     .padding(.horizontal)
                                     .padding(.vertical, 8)
                                     .background(Color(UIColor.systemBackground).opacity(0.95))
-                                    .cornerRadius(10)
+                                    .cornerRadius(25)
                                     .shadow(color: .gray.opacity(0.2), radius: 2, x: 0, y: 1)
                                     .transition(.opacity)
                             }
@@ -140,7 +148,9 @@ struct LoginView: View {
                         self.taskVM.userId = userId
                         UserDefaults.standard.set(userId, forKey: "userId")
                     }
-                    self.notificationsVM.fetchNotifications()
+                    if let userId = authVM.currentUser?.id {
+                        self.notificationsVM.fetchNotifications(userId: userId)
+                    }
                 } else {
                     self.errorMessage = message
                 }

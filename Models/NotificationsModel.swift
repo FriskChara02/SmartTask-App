@@ -1,6 +1,6 @@
 import Foundation
 
-struct NotificationsModel: Identifiable, Codable {
+struct NotificationsModel: Identifiable, Codable, Equatable {
     let id: String // UUID dạng chuỗi để khớp với Database
     let message: String
     let taskId: Int? // Liên kết với task

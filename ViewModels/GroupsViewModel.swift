@@ -12,7 +12,7 @@ class GroupsViewModel: ObservableObject {
     @Published var groupProjects: [Int: [GroupProject]] = [:]
     @Published var groupMembers: [Int: [GroupMember]] = [:]
     @Published var isLoading = false
-    @Published var errorMessage: String? // Thêm để hiển thị lỗi trong UI
+    @Published var errorMessage: String?
     private var authVM: AuthViewModel
 
     init(authVM: AuthViewModel) {
@@ -55,7 +55,7 @@ class GroupsViewModel: ObservableObject {
             DispatchQueue.main.async {
                 if success, let members = members {
                     self?.groupMembers[groupId] = members
-                    print("DEBUG: Group id \(groupId) members: \(members.map { $0.name })")
+                    print("DEBUG: Group id \(groupId), members: \(members.map { $0.name })")
                 } else {
                     self?.errorMessage = message
                     print("❌ Failed to fetch members for group \(groupId): \(message)")

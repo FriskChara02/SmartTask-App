@@ -18,6 +18,8 @@ class ChattingViewModel: ObservableObject {
     @Published var showAlert: Bool = false
     @Published var alertMessage: String = ""
     @Published var isLoading: Bool = false
+    @Published var smartTaskMessages: [ChatMessage] = []
+    @Published var searchText: String?
     
     weak var authVM: AuthViewModel?
 
@@ -68,6 +70,23 @@ class ChattingViewModel: ObservableObject {
                 self.isLoading = false
                 if success, let messages = messages {
                     self.groupMessages = messages.sorted(by: { $0.timestamp < $1.timestamp })
+                } else {
+                    self.alertMessage = message
+                    self.showAlert = true
+                }
+            }
+        }
+    }
+    
+    func fetchSmartTaskMessages(userId: Int) {
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
+        ChatService.fetchSmartTaskMessages(userId: userId) { success, messages, message in
+            DispatchQueue.main.async {
+                self.isLoading = false
+                if success, let messages = messages {
+                    self.smartTaskMessages = messages.sorted(by: { $0.timestamp < $1.timestamp })
                 } else {
                     self.alertMessage = message
                     self.showAlert = true
@@ -137,6 +156,23 @@ class ChattingViewModel: ObservableObject {
         }
     }
     
+    func sendSmartTaskMessage(userId: Int, content: String) {
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
+        ChatService.sendMessage(userId: userId, type: "smarttask", content: content) { success, message in
+            DispatchQueue.main.async {
+                self.isLoading = false
+                if success {
+                    self.fetchSmartTaskMessages(userId: userId)
+                } else {
+                    self.alertMessage = message
+                    self.showAlert = true
+                }
+            }
+        }
+    }
+    
     func refreshMessages(for tab: ChattingView.ChatTab, userId: Int) {
         DispatchQueue.main.async {
             self.isLoading = true
@@ -152,12 +188,8 @@ class ChattingViewModel: ObservableObject {
             if let groupId = selectedGroupId {
                 fetchGroupMessages(userId: userId, groupId: groupId)
             }
-        case .ai:
-            DispatchQueue.main.async {
-                self.isLoading = false
-                self.alertMessage = "Chức năng Chat với AI chưa được triển khai!"
-                self.showAlert = true
-            }
+        case .smarttaskchat:
+            fetchSmartTaskMessages(userId: userId)
         }
     }
 }

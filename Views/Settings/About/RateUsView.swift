@@ -286,6 +286,10 @@ struct RateUsView: View {
                     .frame(maxWidth: .infinity)
                     .background(Color(UIColor.systemBackground).opacity(0.95))
                     .cornerRadius(15)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 15)
+                            .stroke(themeColor.opacity(0.3), lineWidth: 1)
+                    )
                     .shadow(color: .gray.opacity(0.2), radius: 2, x: 0, y: 1)
             } else {
                 GeometryReader { geometry in
@@ -357,6 +361,10 @@ struct RateUsView: View {
             )
         )
         .cornerRadius(30)
+        .overlay(
+            RoundedRectangle(cornerRadius: 30)
+                .stroke(themeColor.opacity(0.3), lineWidth: 1)
+        )
         .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
     }
     

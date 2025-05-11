@@ -47,7 +47,10 @@ struct TopAppBarView: View {
                 // 🔔 Notification Bell
                 Button(action: {
                     showNotifications = true
-                    notificationsVM.fetchNotifications()
+                    if let userId = taskVM.userId {
+                        notificationsVM.fetchNotifications(userId: userId)
+                        notificationsVM.updateUnreadCount()
+                    }
                 }) {
                     ZStack {
                         Image(systemName: "bell")

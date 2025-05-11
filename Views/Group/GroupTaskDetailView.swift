@@ -22,52 +22,36 @@ struct GroupTaskDetailView: View {
     
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                HStack {
-                    Text("Total \(viewModel.tasks.count) Tasks ⟢")
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
-                        .foregroundColor(.primary)
-                    Spacer()
-                    ProgressCircle(progress: viewModel.completionPercentage)
-                        .frame(width: 60, height: 60)
-                        .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
-                }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
-                .background(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            themeColor.opacity(0.2),
-                            Color(UIColor.systemBackground).opacity(0.95)
-
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .cornerRadius(25)
-                .padding(.horizontal)
-                
-                if viewModel.isLoading {
-                    ProgressView()
-                        .padding()
-                        .background(
-                            LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(UIColor.systemBackground).opacity(0.95),
-                                    themeColor.opacity(0.2)
-                                ]),
-                                startPoint: .top,
-                                endPoint: .bottom
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 16) {
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .padding()
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        themeColor.opacity(0.2),
+                                        Color(UIColor.systemBackground).opacity(0.95)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
                             )
-                        )
-                        .cornerRadius(25)
-                        .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
-                } else if viewModel.tasks.isEmpty {
-                    Text("No tasks available .ᐟ")
-                        .font(.system(size: 16, design: .rounded))
-                        .foregroundColor(.gray)
-                        .padding()
+                            .cornerRadius(25)
+                            .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                    } else {
+                        // Task Summary Section
+                        HStack {
+                            Text("Total \(viewModel.tasks.count) Tasks ⟢")
+                                .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                .foregroundColor(.primary)
+                            Spacer()
+                            ProgressCircle(progress: viewModel.completionPercentage)
+                                .frame(width: 60, height: 60)
+                                .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                        }
+                        .padding(.horizontal)
+                        .padding(.vertical, 12)
                         .background(
                             LinearGradient(
                                 gradient: Gradient(colors: [
@@ -79,46 +63,73 @@ struct GroupTaskDetailView: View {
                             )
                         )
                         .cornerRadius(25)
-                        .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
                         .padding(.horizontal)
-                } else {
-                    List {
-                        // Chưa hoàn thành
-                        Section(header: Text("Công việc chưa hoàn thành ❆")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundColor(.gray)) {
-                            ForEach(viewModel.tasks.filter { !$0.isCompleted }) { task in
-                                TaskRow(task: task, viewModel: viewModel, selectedTask: $selectedTask)
+                        
+                        // Task List Section
+                        if viewModel.tasks.isEmpty {
+                            Text("No tasks available .ᐟ")
+                                .font(.system(size: 16, design: .rounded))
+                                .foregroundColor(.gray)
+                                .padding()
+                                .background(
+                                    LinearGradient(
+                                        gradient: Gradient(colors: [
+                                            themeColor.opacity(0.2),
+                                            Color(UIColor.systemBackground).opacity(0.95)
+                                        ]),
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .cornerRadius(25)
+                                .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                                .padding(.horizontal)
+                        } else {
+                            VStack(spacing: 8) {
+                                // Chưa hoàn thành
+                                Section(header: Text("Công việc chưa hoàn thành ❆")
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal)) {
+                                    ForEach(viewModel.tasks.filter { !$0.isCompleted }) { task in
+                                        TaskRow(task: task, viewModel: viewModel, selectedTask: $selectedTask)
+                                    }
+                                }
+                                
+                                // Đã hoàn thành
+                                Section(header: Text("Đã hoàn thành ❀")
+                                    .font(.system(size: 14, weight: .semibold, design: .rounded))
+                                    .foregroundColor(.gray)
+                                    .padding(.horizontal)) {
+                                    ForEach(viewModel.tasks.filter { $0.isCompleted }) { task in
+                                        TaskRow(task: task, viewModel: viewModel, selectedTask: $selectedTask)
+                                    }
+                                }
                             }
+                            .padding(.horizontal)
+                            .background(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        Color(UIColor.systemBackground),
+                                        Color(UIColor.systemBackground)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .cornerRadius(25)
+                            .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
                         }
                         
-                        // Đã hoàn thành
-                        Section(header: Text("Đã hoàn thành ❀")
-                            .font(.system(size: 14, weight: .semibold, design: .rounded))
-                            .foregroundColor(.gray)) {
-                            ForEach(viewModel.tasks.filter { $0.isCompleted }) { task in
-                                TaskRow(task: task, viewModel: viewModel, selectedTask: $selectedTask)
-                            }
+                        // Button Add Tasks Group
+                        if authVM.currentUser?.role != "user" { // Chỉ admin hoặc super_admin được tạo task
+                            ButtonAddGroupTasksView(action: { showingCreateTask = true })
+                                .padding(.horizontal)
+                                .padding(.vertical, 8)
                         }
                     }
-                    .background(
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                themeColor.opacity(0.1),
-                                Color(UIColor.systemBackground)
-                            ]),
-                            startPoint: .top,
-                            endPoint: .bottom
-                        )
-                    )
-                    .scrollContentBackground(.hidden)
                 }
-                
-                if authVM.currentUser?.role != "user" { // Chỉ admin hoặc super_admin được tạo task
-                    ButtonAddGroupTasksView(action: { showingCreateTask = true })
-                        .padding(.horizontal)
-                        .padding(.vertical, 8)
-                }
+                .padding(.vertical)
             }
             .background(
                 LinearGradient(
@@ -206,8 +217,7 @@ struct TaskRow: View {
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [
-                    themeColor.opacity(0.2),
-                    Color(UIColor.systemBackground).opacity(0.95)
+                    themeColor.opacity(0.1), themeColor.opacity(0.1)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -419,7 +429,7 @@ struct CreateTaskView: View {
                     .cornerRadius(25)
                     .overlay(
                         RoundedRectangle(cornerRadius: 25)
-                            .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                        .stroke(themeColor.opacity(0.3), lineWidth: 2)
                     )
                 }
             }
@@ -704,7 +714,7 @@ struct EditTaskView: View {
                     .cornerRadius(25)
                     .overlay(
                         RoundedRectangle(cornerRadius: 25)
-                            .stroke(themeColor.opacity(0.3), lineWidth: 2)
+                                .stroke(themeColor.opacity(0.3), lineWidth: 2)
                     )
                     
                     Toggle("Completed", isOn: $isCompleted)

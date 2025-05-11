@@ -89,6 +89,21 @@ struct ManageGroupsView: View {
                     .environmentObject(authVM)
                     .environmentObject(groupsVM)
             }
+            .onChange(of: showingCreateGroup) { _, newValue in
+                if !newValue, let userId = authVM.currentUser?.id, authVM.currentUser?.role != "admin" {
+                    print("DEBUG: CreateGroupView dismissed, updating user role to admin for userId=\(userId)")
+                    DispatchQueue.main.async {
+                        if var currentUser = authVM.currentUser {
+                            currentUser.role = "admin"
+                            authVM.currentUser = currentUser
+                            print("DEBUG: Updated user to admin")
+                        } else {
+                            print("DEBUG: No current user to update role")
+                            groupsVM.errorMessage = "Không thể cập nhật vai trò: Người dùng không tồn tại"
+                        }
+                    }
+                }
+            }
             .sheet(item: $selectedGroup) { group in
                 EditGroupView(group: group)
                     .environmentObject(authVM)

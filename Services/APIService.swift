@@ -146,7 +146,10 @@ struct APIService {
 
     // 🟢 Hàm upload avatar
     static func uploadAvatar(userId: Int, image: UIImage, completion: @escaping (Bool, String, String?) -> Void) {
-        guard let url = URL(string: baseURL + "upload_avatar.php") else { return }
+        guard let url = URL(string: baseURL + "upload_avatar.php") else {
+            completion(false, "URL không hợp lệ!", nil)
+            return
+        }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
 
@@ -154,39 +157,44 @@ struct APIService {
         request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
 
         var body = Data()
+        // Thêm user_id
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"user_id\"\r\n\r\n".data(using: .utf8)!)
         body.append("\(userId)\r\n".data(using: .utf8)!)
 
-        if let imageData = image.jpegData(compressionQuality: 0.8) {
-            body.append("--\(boundary)\r\n".data(using: .utf8)!)
-            body.append("Content-Disposition: form-data; name=\"avatar\"; filename=\"avatar.jpg\"\r\n".data(using: .utf8)!)
-            body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
-            body.append(imageData)
-            body.append("\r\n".data(using: .utf8)!)
+        // Kiểm tra và thêm ảnh
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            print("❌ Lỗi: Không thể chuyển UIImage thành JPEG data")
+            completion(false, "Không thể xử lý ảnh!", nil)
+            return
         }
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"avatar\"; filename=\"avatar_\(userId).jpg\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: image/jpeg\r\n\r\n".data(using: .utf8)!)
+        body.append(imageData)
+        body.append("\r\n".data(using: .utf8)!)
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
 
         request.httpBody = body
 
-        print("DEBUG: Upload Avatar Request Body = \(String(data: body, encoding: .utf8) ?? "Không có dữ liệu")") // ^^ [NEW] Log chi tiết request
+        print("DEBUG: Image Data Size = \(imageData.count) bytes")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             guard let data = data, error == nil else {
-                print("❌ Lỗi kết nối API uploadAvatar: \(error?.localizedDescription ?? "Không rõ")") // ^^ [NEW] Log để debug
-                completion(false, "Lỗi upload!", nil)
+                print("❌ Lỗi kết nối API uploadAvatar: \(error?.localizedDescription ?? "Không rõ")")
+                completion(false, "Lỗi kết nối API: \(error?.localizedDescription ?? "Không rõ")", nil)
                 return
             }
 
-            print("DEBUG: Upload Avatar Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")") // ^^ [NEW] Log chi tiết response
-
-            if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let success = json["success"] as? Bool,
-               let message = json["message"] as? String {
-                let avatarURL = json["avatar_url"] as? String
+            do {
+                let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+                let success = json?["success"] as? Bool ?? false
+                let message = json?["message"] as? String ?? "Phản hồi không hợp lệ"
+                let avatarURL = json?["avatar_url"] as? String
                 completion(success, message, avatarURL)
-            } else {
-                completion(false, "Phản hồi không hợp lệ!", nil)
+            } catch {
+                print("❌ Lỗi parse JSON: \(error.localizedDescription)")
+                completion(false, "Lỗi parse JSON: \(error.localizedDescription)", nil)
             }
         }.resume()
     }
@@ -625,35 +633,6 @@ struct APIService {
                 completion(response.success, response.message)
             } catch {
                 print("❌ Lỗi giải mã dữ liệu banUser: \(error.localizedDescription)")
-                completion(false, "Lỗi giải mã dữ liệu: \(error.localizedDescription)")
-            }
-        }.resume()
-    }
-    
-    // Thêm từ nhạy cảm
-    static func addSensitiveWord(word: String, adminId: Int, completion: @escaping (Bool, String) -> Void) {
-        let url = URL(string: baseURL + "admin.php")!
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = ["word": word, "admin_id": adminId]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard let data = data, error == nil else {
-                print("❌ Lỗi kết nối API addSensitiveWord: \(error?.localizedDescription ?? "Không rõ")")
-                completion(false, "Lỗi kết nối API!")
-                return
-            }
-
-            print("DEBUG: Add Sensitive Word Response = \(String(data: data, encoding: .utf8) ?? "Không có dữ liệu")")
-
-            do {
-                let response = try JSONDecoder().decode(APIResponse.self, from: data)
-                completion(response.success, response.message)
-            } catch {
-                print("❌ Lỗi giải mã dữ liệu addSensitiveWord: \(error.localizedDescription)")
                 completion(false, "Lỗi giải mã dữ liệu: \(error.localizedDescription)")
             }
         }.resume()

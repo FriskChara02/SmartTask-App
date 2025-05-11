@@ -13,10 +13,12 @@ struct ChatMessage: Codable, Identifiable, Equatable {
     let userId: Int
     let name: String
     let avatarURL: String?
-    let content: String
+    let content: String?
     let timestamp: Date
     let isEdited: Bool
     let isDeleted: Bool
+    let isSystemMessage: Bool
+    
 
     public static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -34,6 +36,7 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         case timestamp
         case isEdited = "is_edited"
         case isDeleted = "is_deleted"
+        case isSystemMessage = "is_system_message"
     }
 
     init(from decoder: Decoder) throws {
@@ -43,7 +46,7 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         self.userId = try container.decode(Int.self, forKey: .userId)
         self.name = try container.decode(String.self, forKey: .name)
         self.avatarURL = try container.decodeIfPresent(String.self, forKey: .avatarURL)
-        self.content = try container.decode(String.self, forKey: .content)
+        self.content = try container.decodeIfPresent(String.self, forKey: .content)
         let timestampString = try container.decode(String.self, forKey: .timestamp)
         guard let timestamp = Self.dateFormatter.date(from: timestampString) else {
             throw DecodingError.dataCorruptedError(forKey: .timestamp, in: container, debugDescription: "Invalid timestamp format")
@@ -51,9 +54,10 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         self.timestamp = timestamp
         self.isEdited = try container.decode(Bool.self, forKey: .isEdited)
         self.isDeleted = try container.decode(Bool.self, forKey: .isDeleted)
+        self.isSystemMessage = try container.decodeIfPresent(Bool.self, forKey: .isSystemMessage) ?? false
     }
 
-    init(id: Int, messageId: Int, userId: Int, name: String, avatarURL: String?, content: String, timestamp: Date, isEdited: Bool, isDeleted: Bool) {
+    init(id: Int, messageId: Int, userId: Int, name: String, avatarURL: String?, content: String?, timestamp: Date, isEdited: Bool, isDeleted: Bool, isSystemMessage: Bool = false) {
         self.id = id
         self.messageId = messageId
         self.userId = userId
@@ -63,6 +67,7 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         self.timestamp = timestamp
         self.isEdited = isEdited
         self.isDeleted = isDeleted
+        self.isSystemMessage = isSystemMessage
     }
 
     func encode(to encoder: Encoder) throws {
@@ -71,10 +76,11 @@ struct ChatMessage: Codable, Identifiable, Equatable {
         try container.encode(userId, forKey: .userId)
         try container.encode(name, forKey: .name)
         try container.encodeIfPresent(avatarURL, forKey: .avatarURL)
-        try container.encode(content, forKey: .content)
+        try container.encodeIfPresent(content, forKey: .content)
         try container.encode(Self.dateFormatter.string(from: timestamp), forKey: .timestamp)
         try container.encode(isEdited, forKey: .isEdited)
         try container.encode(isDeleted, forKey: .isDeleted)
+        try container.encode(isSystemMessage, forKey: .isSystemMessage)
     }
 }
 

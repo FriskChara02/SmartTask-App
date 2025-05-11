@@ -10,9 +10,6 @@ class TaskViewModel: ObservableObject {
     init(notificationsVM: NotificationsViewModel, userId: Int?) {
         self.notificationsVM = notificationsVM
         self.userId = userId
-        if userId != nil {
-            fetchTasks() // Tự động lấy task khi khởi tạo, chỉ khi userId không nil
-        }
     }
 
     // Lấy danh sách công việc theo userId
@@ -106,6 +103,11 @@ class TaskViewModel: ObservableObject {
                     print("✅ Task đã được thêm thành công!")
                     DispatchQueue.main.async {
                         self?.fetchTasks()
+                        if let userId = self?.userId {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                self?.notificationsVM.fetchNotifications(userId: userId)
+                            }
+                        }
                     }
                 } else {
                     print("❌ Lỗi server hoặc response không hợp lệ. Status code:", (response as? HTTPURLResponse)?.statusCode ?? -1)

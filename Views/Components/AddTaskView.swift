@@ -4,6 +4,7 @@ struct AddTaskView: View {
     @EnvironmentObject var taskVM: TaskViewModel
     @EnvironmentObject var categoryVM: CategoryViewModel
     @EnvironmentObject var weatherVM: WeatherViewModel
+    @EnvironmentObject var notificationsVM: NotificationsViewModel
     @Environment(\.dismiss) var dismiss
     
     @State private var title = ""
@@ -94,7 +95,7 @@ struct AddTaskView: View {
             print("❌ Error: userId is nil. Please log in first.")
             return
         }
-        guard let categoryId = selectedCategoryId else { // Unwrap optional
+        guard let categoryId = selectedCategoryId else {
             print("❌ Error: Category ID is nil.")
             return
         }
@@ -102,11 +103,14 @@ struct AddTaskView: View {
         taskVM.addTask(
             title: title,
             description: description,
-            categoryId: categoryId, // Đã unwrap
+            categoryId: categoryId,
             dueDate: dueDate,
             priority: priority
         )
-        dismiss()
+        DispatchQueue.main.async {
+            self.notificationsVM.updateUnreadCount()
+            self.dismiss()
+        }
     }
 }
 
