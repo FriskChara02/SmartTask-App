@@ -19,22 +19,40 @@ struct GroupsView: View {
     @State private var searchText = ""
     @State private var isSearchFieldVisible = false
     
+    @AppStorage("themeColor") private var themeColorStorage: String = ""
+    @AppStorage("themeTexture") private var themeTexture: String = ""
+    @AppStorage("themeScenery") private var themeScenery: String = ""
+    @AppStorage("customPhotoData") private var customPhotoData: Data?
+    
     private let colors: [(name: String, color: Color)] = [
-        ("blue", .blue),
-        ("purple", .purple),
-        ("red", .red),
-        ("orange", .orange),
-        ("yellow", .yellow),
-        ("green", .green),
-        ("mint", .mint),
-        ("teal", .teal),
-        ("cyan", .cyan),
-        ("indigo", .indigo),
-        ("pink", .pink),
-        ("brown", .brown),
-        ("gray", .gray),
-        ("Black", .black),
-        ("White", .white)
+        ("Default", .gray), ("Blue", .blue), ("Green", .green), ("Pink", .pink),
+        ("Purple", .purple), ("Red", .red), ("Black", .black), ("Yellow", .yellow),
+        ("Orange", .orange), ("Mint", .mint), ("Teal", .teal), ("Cyan", .cyan),
+        ("Indigo", .indigo), ("Brown", .brown), ("White", .white)
+    ]
+    
+    private let textures: [(name: String, gradient: Gradient?)] = [
+        ("Default", nil),
+        ("Sunset Gradient", Gradient(colors: [.orange, .pink, .purple])),
+        ("Ocean Gradient", Gradient(colors: [.blue, .cyan, .teal])),
+        ("Forest Gradient", Gradient(colors: [.green, .mint, .brown])),
+        ("Twilight Glow", Gradient(colors: [.purple, .indigo, .blue])),
+        ("Desert Heat", Gradient(colors: [.red, .orange, .yellow])),
+        ("Aurora", Gradient(colors: [.cyan, .green, .blue])),
+        ("Candy Pop", Gradient(colors: [.pink, .cyan, .yellow])),
+        ("Midnight", Gradient(colors: [.black, .indigo, .gray])),
+        ("Spring Bloom", Gradient(colors: [.mint, .pink, .white])),
+        ("Golden Hour", Gradient(colors: [.yellow, .orange, .red])),
+        ("Frost", Gradient(colors: [.white, .cyan, .blue]))
+    ]
+
+    private let sceneries: [(name: String, imageName: String?)] = [
+        ("Default", nil),
+        ("Tekapo Lake", "Tekapo Lake"),
+        ("Meadow", "meadow-with-trees-wooden-fence"),
+        ("Wet Vietnam", "wet-vietnam-mountain-flow-stream-rural"),
+        (" Cascade", "cascade-boat-clean-china-natural-rural"),
+        ("Fuji", "fuji-mountain-kawaguchiko-lake-sunset-autumn-seasons-fuji-mountain-yamanachi-japan")
     ]
     
     private var filteredGroups: [GroupModel] {
@@ -203,6 +221,7 @@ struct GroupsView: View {
                 ManageGroupsView()
                     .environmentObject(authVM)
             }
+            .background(backgroundView().opacity(0.9).ignoresSafeArea())
             .onAppear {
                 print("DEBUG: GroupsView onAppear - authVM.currentUser = \(String(describing: authVM.currentUser))")
                 if let userId = authVM.currentUser?.id, let role = authVM.currentUser?.role {
@@ -214,6 +233,39 @@ struct GroupsView: View {
                 }
             }
         }
+    }
+    
+    // MARK: - Background View
+    private func backgroundView() -> some View {
+        if !themeTexture.isEmpty && themeTexture != "Default" {
+            if let selectedGradient = textures.first(where: { $0.name == themeTexture })?.gradient {
+                return AnyView(LinearGradient(
+                    gradient: selectedGradient,
+                    startPoint: .top,
+                    endPoint: .bottom
+                ))
+            }
+        } else if !themeScenery.isEmpty && themeScenery != "Default" {
+            if themeScenery == "Your Photos", let photoData = UserDefaults.standard.data(forKey: "customPhotoData"), let uiImage = UIImage(data: photoData) {
+                return AnyView(Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .clipped())
+            } else if let selectedImage = sceneries.first(where: { $0.name == themeScenery })?.imageName {
+                return AnyView(Image(selectedImage)
+                    .resizable()
+                    .scaledToFill()
+                    .clipped())
+            }
+        }
+        return AnyView(LinearGradient(
+            gradient: Gradient(colors: [
+                (colors.first(where: { $0.name == themeColorStorage })?.color ?? .gray).opacity(0.1),
+                Color(UIColor.systemBackground)
+            ]),
+            startPoint: .top,
+            endPoint: .bottom
+        ))
     }
 }
 

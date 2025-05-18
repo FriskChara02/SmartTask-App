@@ -1,0 +1,23 @@
+{
+  "images" : [
+    {
+      "filename" : "cascade-boat-clean-china-natural-rural.jpg",
+      "idiom" : "universal",
+      "scale" : "1x"
+    },
+    {
+      "filename" : "cascade-boat-clean-china-natural-rural 1.jpg",
+      "idiom" : "universal",
+      "scale" : "2x"
+    },
+    {
+      "filename" : "cascade-boat-clean-china-natural-rural 2.jpg",
+      "idiom" : "universal",
+      "scale" : "3x"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

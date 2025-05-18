@@ -144,7 +144,7 @@ struct SettingsView: View {
                             .foregroundColor(.gray)
                         Text("Version")
                         Spacer()
-                        Text("1.0.2")
+                        Text("1.0.4")
                             .foregroundColor(.gray)
                     }
                 }
@@ -260,14 +260,6 @@ struct AccountSectionView: View {
     }
 }
 
-// Placeholder Views (giữ nguyên)
-struct NotificationSettingsView: View {
-    var body: some View {
-        Text("Notification & Reminder - Coming Soon")
-            .navigationTitle("Notification & Reminder")
-    }
-}
-
 // MARK: - Toast View
 struct Toast: View {
     let message: String
@@ -275,12 +267,12 @@ struct Toast: View {
     var body: some View {
         Text(message)
             .font(.system(size: 14, weight: .medium, design: .rounded))
-            .foregroundColor(.primary) // Tự động điều chỉnh theo Dark/Light Mode
+            .foregroundColor(.primary)
             .padding()
             .background(
                 ZStack {
-                    Color(UIColor.systemBackground).opacity(0.8) // Nền hệ thống
-                    VisualEffectView(effect: UIBlurEffect(style: .systemMaterial)) // Hiệu ứng mờ
+                    Color(UIColor.systemBackground).opacity(0.8)
+                    VisualEffectView(effect: UIBlurEffect(style: .systemMaterial))
                         .opacity(0.9)
                 }
             )

@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import UIKit
+import EmojiKit
 
 struct ChattingView: View {
     @EnvironmentObject var authVM: AuthViewModel
@@ -96,7 +98,6 @@ struct ChattingView: View {
     }
 }
 
-// Reusable components from original code
 struct MessageListView: View {
     @ObservedObject var viewModel: ChattingViewModel
     let selectedTab: ChattingView.ChatTab
@@ -194,29 +195,22 @@ struct MessageInputView: View {
     var body: some View {
         VStack(spacing: 8) {
             if showEmojiPicker {
-                VStack {
-                    Text("Emoji Picker - Coming Soon")
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
-                        .foregroundColor(.secondary)
-                    Image(systemName: "face.smiling.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(themeColor)
-                }
-                .frame(height: 200)
-                .background(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color(UIColor.systemFill),
-                            Color(UIColor.systemBackground)
-                        ]),
-                        startPoint: .top,
-                        endPoint: .bottom
+                EmojiPicker(messageText: $messageText, showEmojiPicker: $showEmojiPicker)
+                    .frame(height: 250)
+                    .background(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(UIColor.systemFill),
+                                Color(UIColor.systemBackground)
+                            ]),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
                     )
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 25))
-                .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
-                .padding(.horizontal)
-                .transition(.scale)
+                    .clipShape(RoundedRectangle(cornerRadius: 25))
+                    .shadow(color: .gray.opacity(0.2), radius: 4, x: 0, y: 2)
+                    .padding(.horizontal)
+                    .transition(.scale)
             }
             
             HStack(alignment: .center, spacing: 12) {
@@ -522,6 +516,180 @@ struct ChatBubbleShape: Shape {
         }
         path.closeSubpath()
         return path
+    }
+}
+
+struct EmojiPicker: UIViewControllerRepresentable {
+    @Binding var messageText: String
+    @Binding var showEmojiPicker: Bool
+    @Environment(\.themeColor) var themeColor
+    
+    func makeUIViewController(context: Context) -> UIViewController {
+        let viewController = UIViewController()
+        let layout = UICollectionViewFlowLayout()
+        layout.itemSize = CGSize(width: 50, height: 50)
+        layout.minimumInteritemSpacing = 10
+        layout.minimumLineSpacing = 10
+        layout.sectionInset = UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.register(EmojiCell.self, forCellWithReuseIdentifier: "EmojiCell")
+        collectionView.backgroundColor = UIColor(Color(UIColor.systemBackground))
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.dataSource = context.coordinator
+        collectionView.delegate = context.coordinator
+        
+        let searchBar = UISearchBar()
+        searchBar.placeholder = "Tìm emoji (ví dụ: 😊, smile)"
+        searchBar.delegate = context.coordinator
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        
+        let closeButton = UIButton(type: .system)
+        closeButton.setTitle("✖️", for: .normal)
+        closeButton.titleLabel?.font = .systemFont(ofSize: 20)
+        closeButton.addTarget(context.coordinator, action: #selector(Coordinator.closeTapped), for: .touchUpInside)
+        closeButton.translatesAutoresizingMaskIntoConstraints = false
+        
+        let stackView = UIStackView(arrangedSubviews: [searchBar, closeButton, collectionView])
+        stackView.axis = .vertical
+        stackView.spacing = 10
+        stackView.translatesAutoresizingMaskIntoConstraints = false
+        viewController.view.addSubview(stackView)
+        
+        NSLayoutConstraint.activate([
+            stackView.topAnchor.constraint(equalTo: viewController.view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            stackView.leadingAnchor.constraint(equalTo: viewController.view.leadingAnchor, constant: 10),
+            stackView.trailingAnchor.constraint(equalTo: viewController.view.trailingAnchor, constant: -10),
+            stackView.bottomAnchor.constraint(lessThanOrEqualTo: viewController.view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
+            searchBar.heightAnchor.constraint(equalToConstant: 44),
+            closeButton.heightAnchor.constraint(equalToConstant: 30),
+            collectionView.heightAnchor.constraint(equalToConstant: 200)
+        ])
+        
+        viewController.view.backgroundColor = UIColor(Color(UIColor.systemBackground))
+        context.coordinator.collectionView = collectionView
+        collectionView.reloadData()
+        return viewController
+    }
+    
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        context.coordinator.parent = self
+        context.coordinator.collectionView?.reloadData()
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, UICollectionViewDataSource, UICollectionViewDelegate, UISearchBarDelegate {
+        var parent: EmojiPicker
+        var collectionView: UICollectionView?
+        var filteredEmojis: [Emoji]
+        
+        init(_ parent: EmojiPicker) {
+            self.parent = parent
+            self.filteredEmojis = Emoji.all
+            super.init()
+        }
+
+        func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+            return filteredEmojis.count
+        }
+
+        func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "EmojiCell", for: indexPath) as! EmojiCell
+            let emoji = filteredEmojis[indexPath.item]
+            cell.emojiLabel.text = emoji.char
+            return cell
+        }
+
+        func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+            let emoji = filteredEmojis[indexPath.item].char
+            parent.messageText += emoji
+            print("✅ Selected emoji: \(emoji)")
+            
+            // Animation khi chọn
+            if let cell = collectionView.cellForItem(at: indexPath) {
+                cell.transform = CGAffineTransform(scaleX: 1.3, y: 1.3)
+                UIView.animate(withDuration: 0.2) {
+                    cell.transform = .identity
+                }
+            }
+        }
+
+        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+            if searchText.isEmpty {
+                filteredEmojis = Emoji.all
+            } else {
+                let lowercasedSearch = searchText.lowercased()
+                filteredEmojis = Emoji.all.filter { emoji in
+                    emoji.char.lowercased().contains(lowercasedSearch) ||
+                    simpleKeywordMapping[emoji.char]?.contains { keyword in
+                        keyword.lowercased().contains(lowercasedSearch)
+                    } ?? false
+                }
+            }
+            print("✅ Search text: \(searchText), filtered: \(filteredEmojis.count)")
+            collectionView?.reloadData()
+        }
+        
+        let simpleKeywordMapping: [String: [String]] = [
+            "😊": ["smile", "happy"], "😂": ["laugh", "funny"], "😍": ["heart", "love"], "😎": ["cool", "sunglasses"],
+            "😢": ["cry", "sad"], "😡": ["angry", "mad"], "🥰": ["blush", "love"], "😴": ["sleep", "tired"],
+            "🤩": ["starstruck", "excited"], "🙈": ["see no evil", "monkey"], "🙉": ["hear no evil", "monkey"],
+            "🙊": ["speak no evil", "monkey"], "😺": ["cat", "smile"], "😸": ["cat", "grin"], "😻": ["cat", "love"],
+            "👋": ["wave", "hello"], "👍": ["thumbs up", "good"], "👎": ["thumbs down", "bad"], "🙌": ["raised hands", "celebrate"],
+            "👏": ["clap", "applause"], "💪": ["muscle", "strong"], "🤝": ["handshake", "deal"], "👊": ["fist bump", "punch"],
+            "✌️": ["peace", "victory"], "🤞": ["crossed fingers", "luck"], "🙏": ["pray", "thanks"], "🤳": ["selfie", "photo"],
+            "💃": ["dance", "woman"], "🕺": ["dance", "man"], "👶": ["baby", "child"], "🐶": ["dog", "puppy"],
+            "🐱": ["cat", "kitten"], "🐭": ["mouse", "rodent"], "🐰": ["rabbit", "bunny"], "🦁": ["lion", "king"],
+            "🐘": ["elephant", "big"], "🦒": ["giraffe", "tall"], "🦊": ["fox", "sly"], "🐻": ["bear", "teddy"],
+            "🐼": ["panda", "cute"], "🌸": ["cherry blossom", "flower"], "🌹": ["rose", "flower"], "🌻": ["sunflower", "sun"],
+            "🌴": ["palm tree", "tropical"], "🌈": ["rainbow", "color"], "🍎": ["apple", "fruit"], "🍐": ["pear", "fruit"],
+            "🍊": ["orange", "fruit"], "🍋": ["lemon", "sour"], "🍉": ["watermelon", "fruit"], "🍕": ["pizza", "food"],
+            "🍔": ["burger", "hamburger"], "🍟": ["fries", "chips"], "🍣": ["sushi", "japanese"], "🍜": ["ramen", "noodles"],
+            "🍦": ["ice cream", "dessert"], "🍰": ["cake", "dessert"], "🍫": ["chocolate", "sweet"], "☕": ["coffee", "drink"],
+            "🍵": ["tea", "drink"], "⚽": ["soccer", "football"], "🏀": ["basketball", "sport"], "🏈": ["football", "american"],
+            "🎾": ["tennis", "sport"], "🏐": ["volleyball", "sport"], "🎳": ["bowling", "game"], "🎮": ["video game", "gaming"],
+            "🎲": ["dice", "game"], "🎸": ["guitar", "music"], "🎤": ["microphone", "sing"], "🎨": ["art", "paint"],
+            "📚": ["book", "read"], "✈️": ["airplane", "travel"], "🚗": ["car", "drive"], "�userId": ["bicycle", "bike"],
+            "💡": ["light bulb", "idea"], "📱": ["phone", "smartphone"], "💻": ["laptop", "computer"], "⌚": ["watch", "time"],
+            "📷": ["camera", "photo"], "🎁": ["gift", "present"], "🔔": ["bell", "alert"], "🔑": ["key", "lock"],
+            "💸": ["money", "cash"], "📬": ["mailbox", "mail"], "🔍": ["magnifying glass", "search"], "✂️": ["scissors", "cut"],
+            "🔨": ["hammer", "tool"], "🛠️": ["tools", "repair"], "⚙️": ["gear", "settings"], "❤️": ["heart", "love"],
+            "💔": ["broken heart", "sad"], "⭐": ["star", "shine"], "✨": ["sparkles", "magic"], "⚡": ["lightning", "electric"],
+            "🔥": ["fire", "hot"], "💥": ["explosion", "boom"], "☮️": ["peace", "symbol"], "✅": ["check", "done"],
+            "❌": ["cross", "wrong"], "♻️": ["recycle", "green"], "➡️": ["right arrow", "forward"], "⬅️": ["left arrow", "back"],
+            "⬆️": ["up arrow", "up"], "⬇️": ["down arrow", "down"]
+        ]
+        
+        @objc func closeTapped() {
+            parent.showEmojiPicker = false
+        }
+    }
+}
+
+class EmojiCell: UICollectionViewCell {
+    let emojiLabel = UILabel()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        emojiLabel.font = .systemFont(ofSize: 30)
+        emojiLabel.textAlignment = .center
+        emojiLabel.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(emojiLabel)
+        NSLayoutConstraint.activate([
+            emojiLabel.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            emojiLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
+            emojiLabel.widthAnchor.constraint(equalToConstant: 50),
+            emojiLabel.heightAnchor.constraint(equalToConstant: 50)
+        ])
+        contentView.layer.borderColor = UIColor.red.cgColor
+        contentView.layer.borderWidth = 1
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 }
 
