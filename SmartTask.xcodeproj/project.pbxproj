@@ -54,6 +54,11 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		7A7E11B72DDCDE7C002B4654 /* BackendNotes */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = BackendNotes;
+			sourceTree = "<group>";
+		};
 		7A857C862D840061005657C7 /* SmartTask */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -147,6 +152,7 @@
 				7A857CB72D840139005657C7 /* Views */,
 				7A857CE72D8402DB005657C7 /* Utils */,
 				7AD3CA362D84176400CC06F6 /* Services */,
+				7A7E11B72DDCDE7C002B4654 /* BackendNotes */,
 				7AC498CA2DB08E8200211243 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -184,6 +190,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
+				7A7E11B72DDCDE7C002B4654 /* BackendNotes */,
 				7A857C862D840061005657C7 /* SmartTask */,
 				7A857CB22D8400E6005657C7 /* Models */,
 				7A857CB32D8400FC005657C7 /* ViewModels */,
