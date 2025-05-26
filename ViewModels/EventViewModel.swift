@@ -243,7 +243,9 @@ class EventViewModel: ObservableObject {
                             title: event.title,
                             startDate: event.startDate,
                             endDate: event.endDate,
-                            description: event.description
+                            description: event.description,
+                            attendeeEmail: event.attendeeEmail,
+                            colorName: event.colorName
                         ) { result in
                             switch result {
                             case .success(let updatedEventId):

@@ -116,12 +116,12 @@ class UserViewModel: ObservableObject {
                             role: self?.currentUser?.role // Giữ role cũ
                         )
                         self?.authVM?.currentUser = self?.currentUser
-                        print("DEBUG: ✅ Cập nhật hồ sơ thành công")
+                        print("✅ Cập nhật hồ sơ thành công")
                         completion()
                     } else {
                         self?.alertMessage = message
                         self?.showPasswordAlert = true
-                        print("DEBUG: ❌ Cập nhật hồ sơ thất bại - \(message)")
+                        print("❌ Cập nhật hồ sơ thất bại - \(message)")
                     }
                 }
             }
@@ -142,12 +142,12 @@ class UserViewModel: ObservableObject {
                         self?.currentUser?.status = status
                         self?.authVM?.currentUser?.status = status
                         self?.editedStatus = status
-                        print("DEBUG: ✅ Cập nhật trạng thái thành công: \(status)")
+                        print("✅ Cập nhật trạng thái thành công: \(status)")
                         completion(true)
                     } else {
                         self?.alertMessage = message
                         self?.showPasswordAlert = true
-                        print("DEBUG: ❌ Cập nhật trạng thái thất bại - \(message)")
+                        print("❌ Cập nhật trạng thái thất bại - \(message)")
                         completion(false)
                     }
                 }
@@ -166,12 +166,12 @@ class UserViewModel: ObservableObject {
         APIService.sendFriendRequest(from: currentUserId, to: userId) { [weak self] success, message in
             DispatchQueue.main.async {
                 if success {
-                    print("DEBUG: ✅ Gửi yêu cầu kết bạn thành công tới user \(userId)")
+                    print("✅ Gửi yêu cầu kết bạn thành công tới user \(userId)")
                     completion(true)
                 } else {
                     self?.alertMessage = message
                     self?.showPasswordAlert = true
-                    print("DEBUG: ❌ Gửi yêu cầu kết bạn thất bại - \(message)")
+                    print("❌ Gửi yêu cầu kết bạn thất bại - \(message)")
                     completion(false)
                 }
             }
@@ -183,12 +183,12 @@ class UserViewModel: ObservableObject {
         APIService.acceptFriendRequest(requestId: requestId) { [weak self] success, message in
             DispatchQueue.main.async {
                 if success {
-                    print("DEBUG: ✅ Chấp nhận yêu cầu kết bạn thành công: \(requestId)")
+                    print("✅ Chấp nhận yêu cầu kết bạn thành công: \(requestId)")
                     completion(true)
                 } else {
                     self?.alertMessage = message
                     self?.showPasswordAlert = true
-                    print("DEBUG: ❌ Chấp nhận yêu cầu kết bạn thất bại - \(message)")
+                    print("❌ Chấp nhận yêu cầu kết bạn thất bại - \(message)")
                     completion(false)
                 }
             }
@@ -200,12 +200,12 @@ class UserViewModel: ObservableObject {
         APIService.rejectFriendRequest(requestId: requestId) { [weak self] success, message in
             DispatchQueue.main.async {
                 if success {
-                    print("DEBUG: ✅ Từ chối yêu cầu kết bạn thành công: \(requestId)")
+                    print("✅ Từ chối yêu cầu kết bạn thành công: \(requestId)")
                     completion(true)
                 } else {
                     self?.alertMessage = message
                     self?.showPasswordAlert = true
-                    print("DEBUG: ❌ Từ chối yêu cầu kết bạn thất bại - \(message)")
+                    print("❌ Từ chối yêu cầu kết bạn thất bại - \(message)")
                     completion(false)
                 }
             }
@@ -224,12 +224,12 @@ class UserViewModel: ObservableObject {
         APIService.startPrivateChat(from: currentUserId, to: userId) { [weak self] success, message, chatId in
             DispatchQueue.main.async {
                 if success, let chatId = chatId {
-                    print("DEBUG: ✅ Khởi tạo phiên chat riêng thành công: \(chatId)")
+                    print("✅ Khởi tạo phiên chat riêng thành công: \(chatId)")
                     completion(true, chatId)
                 } else {
                     self?.alertMessage = message
                     self?.showPasswordAlert = true
-                    print("DEBUG: ❌ Khởi tạo phiên chat riêng thất bại - \(message)")
+                    print("❌ Khởi tạo phiên chat riêng thất bại - \(message)")
                     completion(false, nil)
                 }
             }
@@ -240,7 +240,7 @@ class UserViewModel: ObservableObject {
     func logout(authVM: AuthViewModel, completion: @escaping () -> Void) {
         authVM.logout()
         self.currentUser = nil
-        print("DEBUG: ✅ Đăng xuất thành công")
+        print("✅ Đăng xuất thành công")
         completion()
     }
 
@@ -256,12 +256,12 @@ class UserViewModel: ObservableObject {
                     if success {
                         authVM.logout()
                         self?.currentUser = nil
-                        print("DEBUG: ✅ Xóa tài khoản thành công")
+                        print("✅ Xóa tài khoản thành công")
                         completion()
                     } else {
                         self?.alertMessage = message
                         self?.showPasswordAlert = true
-                        print("DEBUG: ❌ Xóa tài khoản thất bại - \(message)")
+                        print("❌ Xóa tài khoản thất bại - \(message)")
                     }
                 }
             }
@@ -283,7 +283,7 @@ class UserViewModel: ObservableObject {
             let message = "Ảnh quá lớn (giới hạn 5MB)"
             errorMessage = message
             showError = true
-            print("DEBUG: ❌ Ảnh quá lớn: \(image.jpegData(compressionQuality: 0.8)?.count ?? 0) bytes")
+            print("❌ Ảnh quá lớn: \(image.jpegData(compressionQuality: 0.8)?.count ?? 0) bytes")
             completion(false, message, nil)
             return
         }
@@ -293,9 +293,9 @@ class UserViewModel: ObservableObject {
                 if success, let url = avatarURL {
                     self?.currentUser?.avatarURL = url
                     self?.authVM?.currentUser?.avatarURL = url
-                    print("DEBUG: ✅ Upload avatar thành công: \(url)")
+                    print("✅ Upload avatar thành công: \(url)")
                 } else {
-                    print("DEBUG: ❌ Upload avatar thất bại - \(message)")
+                    print("❌ Upload avatar thất bại - \(message)")
                 }
                 self?.errorMessage = message
                 self?.showError = true

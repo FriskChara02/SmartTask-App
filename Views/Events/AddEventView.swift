@@ -26,7 +26,23 @@ struct AddEventView: View {
     @State private var hasConflict = false
     @State private var errorMessage: String?
     @State private var isCreatingEvent = false // Ngăn tap lặp
-    @State private var showErrorAlert = false // Trạng thái để hiển thị Alert cho errorMessage
+    @State private var showErrorAlert = false
+    @State private var attendeeEmail: String = "" // Email người nhận sự kiện
+    @State private var selectedColor: String = "Tomato" // Màu mặc định
+    
+    private let googleCalendarColors: [(name: String, color: Color)] = [
+        ("Tomato", Color(red: 219/255, green: 68/255, blue: 55/255)), // #DB4437
+        ("Tangerine", Color(red: 244/255, green: 180/255, blue: 0/255)), // #F4B400
+        ("Sage", Color(red: 93/255, green: 165/255, blue: 147/255)), // #5DA593
+        ("Peacock", Color(red: 66/255, green: 133/255, blue: 244/255)), // #4285F4
+        ("Lavender", Color(red: 179/255, green: 136/255, blue: 235/255)), // #B388EB
+        ("Graphite", Color(red: 95/255, green: 99/255, blue: 104/255)), // #5F6368
+        ("Flamingo", Color(red: 242/255, green: 139/255, blue: 130/255)), // #F28B82
+        ("Banana", Color(red: 251/255, green: 188/255, blue: 4/255)), // #FBBC04
+        ("Basil", Color(red: 15/255, green: 157/255, blue: 88/255)), // #0F9D58
+        ("Blueberry", Color(red: 51/255, green: 103/255, blue: 214/255)), // #3367D6
+        ("Grape", Color(red: 123/255, green: 87/255, blue: 245/255)) // #7B57F5
+    ]
     
     // MARK: - Body
     var body: some View {
@@ -76,6 +92,31 @@ struct AddEventView: View {
                         Text("High").tag("High")
                     }
                     .pickerStyle(SegmentedPickerStyle())
+                }
+                
+                Section(header: Text("Google Calendar ✶").font(.system(size: 16, weight: .medium, design: .rounded))) {
+                    TextField("   Email", text: $attendeeEmail)
+                        .font(.system(size: 16, design: .rounded))
+                        .padding(.vertical, 5)
+                        .background(Color(UIColor.systemFill))
+                        .cornerRadius(25)
+                        .disabled(!googleAuthVM.isSignedIn)
+                        .opacity(googleAuthVM.isSignedIn ? 1.0 : 0.5)
+                    
+                    Picker("Màu sự kiện 🎨", selection: $selectedColor) {
+                        ForEach(googleCalendarColors, id: \.name) { color in
+                            HStack {
+                                Circle()
+                                    .fill(color.color)
+                                    .frame(width: 20, height: 20)
+                                Text(color.name)
+                            }
+                            .tag(color.name)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                    .disabled(!googleAuthVM.isSignedIn)
+                    .opacity(googleAuthVM.isSignedIn ? 1.0 : 0.5)
                 }
                 
                 if let errorMessage = errorMessage {
@@ -207,7 +248,9 @@ struct AddEventView: View {
                     title: title,
                     startDate: startDate,
                     endDate: endDate,
-                    description: description
+                    description: description,
+                    attendeeEmail: attendeeEmail.isEmpty ? nil : attendeeEmail,
+                    colorName: selectedColor
                 ) { result in
                     DispatchQueue.main.async {
                         switch result {

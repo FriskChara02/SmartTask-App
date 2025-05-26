@@ -221,7 +221,7 @@ class GoogleCalendarService: ObservableObject {
     }
     
     // MARK: - Helper
-    private func buildEvent(id: String?, title: String, startDate: Date, endDate: Date?, description: String?) -> GTLRCalendar_Event {
+    private func buildEvent(id: String?, title: String, startDate: Date, endDate: Date?, description: String?, attendeeEmail: String?, colorName: String?) -> GTLRCalendar_Event {
         let event = GTLRCalendar_Event()
         event.identifier = id
         event.summary = title
@@ -237,6 +237,29 @@ class GoogleCalendarService: ObservableObject {
         event.end = GTLRCalendar_EventDateTime()
         event.end?.dateTime = endDateTime
         event.end?.timeZone = "Asia/Ho_Chi_Minh"
+        
+        if let email = attendeeEmail, !email.isEmpty {
+            let attendee = GTLRCalendar_EventAttendee()
+            attendee.email = email
+            event.attendees = [attendee]
+        }
+        
+        if let colorName = colorName {
+            let colorMap: [String: String] = [
+                "Tomato": "11", // #DB4437
+                "Tangerine": "6", // #F4B400
+                "Sage": "10", // #5DA593
+                "Peacock": "2", // #4285F4
+                "Lavender": "3", // #B388EB
+                "Graphite": "8", // #5F6368
+                "Flamingo": "4", // #F28B82
+                "Banana": "5", // #FBBC04
+                "Basil": "9", // #0F9D58
+                "Blueberry": "1", // #3367D6
+                "Grape": "7" // #7B57F5
+            ]
+            event.colorId = colorMap[colorName]
+        }
         
         return event
     }
@@ -375,7 +398,7 @@ class GoogleCalendarService: ObservableObject {
     }
     
     // MARK: - Create Event
-    func createEvent(title: String, startDate: Date, endDate: Date?, description: String?, completion: @escaping (Result<String, Error>) -> Void) {
+    func createEvent(title: String, startDate: Date, endDate: Date?, description: String?, attendeeEmail: String?, colorName: String?, completion: @escaping (Result<String, Error>) -> Void) {
         guard isSignedIn else {
             print("❌ Not signed in")
             completion(.failure(GoogleCalendarError.notSignedIn))
@@ -390,7 +413,7 @@ class GoogleCalendarService: ObservableObject {
         refreshTokenIfNeeded { result in
             switch result {
             case .success:
-                let event = self.buildEvent(id: nil, title: title, startDate: startDate, endDate: endDate, description: description)
+                let event = self.buildEvent(id: nil, title: title, startDate: startDate, endDate: endDate, description: description, attendeeEmail: attendeeEmail, colorName: colorName)
                 
                 let urlString = "https://www.googleapis.com/calendar/v3/calendars/primary/events?key=\(self.apiKey)"
                 guard let url = URL(string: urlString) else {
@@ -477,7 +500,7 @@ class GoogleCalendarService: ObservableObject {
     }
     
     // MARK: - Update Event
-    func updateEvent(eventId: String, title: String, startDate: Date, endDate: Date?, description: String?, completion: @escaping (Result<String, Error>) -> Void) {
+    func updateEvent(eventId: String, title: String, startDate: Date, endDate: Date?, description: String?, attendeeEmail: String?, colorName: String?, completion: @escaping (Result<String, Error>) -> Void) {
         guard isSignedIn else {
             completion(.failure(GoogleCalendarError.notSignedIn))
             return
@@ -486,7 +509,7 @@ class GoogleCalendarService: ObservableObject {
         refreshTokenIfNeeded { result in
             switch result {
             case .success:
-                let event = self.buildEvent(id: eventId, title: title, startDate: startDate, endDate: endDate, description: description)
+                let event = self.buildEvent(id: eventId, title: title, startDate: startDate, endDate: endDate, description: description, attendeeEmail: attendeeEmail, colorName: colorName)
                 
                 let urlString = "https://www.googleapis.com/calendar/v3/calendars/primary/events/\(eventId)?key=\(self.apiKey)"
                 guard let url = URL(string: urlString) else {

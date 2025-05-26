@@ -19,8 +19,10 @@ struct EventModel: Identifiable, Codable, Equatable { // ^^ Thêm Equatable
     let createdAt: Date
     let updatedAt: Date
     let googleEventId: String?
+    let attendeeEmail: String?
+    let colorName: String?
     
-    init(id: Int, userId: Int, title: String, description: String? = nil, startDate: Date, endDate: Date? = nil, priority: String, isAllDay: Bool, createdAt: Date, updatedAt: Date, googleEventId: String? = nil) {
+    init(id: Int, userId: Int, title: String, description: String? = nil, startDate: Date, endDate: Date? = nil, priority: String, isAllDay: Bool, createdAt: Date, updatedAt: Date, googleEventId: String? = nil, attendeeEmail: String? = nil, colorName: String? = nil) {
         self.id = id
         self.userId = userId
         self.title = title
@@ -32,6 +34,8 @@ struct EventModel: Identifiable, Codable, Equatable { // ^^ Thêm Equatable
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.googleEventId = googleEventId
+        self.attendeeEmail = attendeeEmail
+        self.colorName = colorName
     }
     
     enum CodingKeys: String, CodingKey {
@@ -46,6 +50,8 @@ struct EventModel: Identifiable, Codable, Equatable { // ^^ Thêm Equatable
         case createdAt = "createdAt"
         case updatedAt = "updatedAt"
         case googleEventId = "googleEventId"
+        case attendeeEmail = "attendeeEmail"
+        case colorName = "colorName"
     }
     
     init(from decoder: Decoder) throws {
@@ -62,6 +68,8 @@ struct EventModel: Identifiable, Codable, Equatable { // ^^ Thêm Equatable
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         updatedAt = try container.decode(Date.self, forKey: .updatedAt)
         googleEventId = try container.decodeIfPresent(String.self, forKey: .googleEventId)
+        attendeeEmail = try container.decodeIfPresent(String.self, forKey: .attendeeEmail)
+        colorName = try container.decodeIfPresent(String.self, forKey: .colorName)
     }
     
     func encode(to encoder: Encoder) throws {
@@ -77,6 +85,8 @@ struct EventModel: Identifiable, Codable, Equatable { // ^^ Thêm Equatable
         try container.encode(createdAt, forKey: .createdAt)
         try container.encode(updatedAt, forKey: .updatedAt)
         try container.encodeIfPresent(googleEventId, forKey: .googleEventId)
+        try container.encodeIfPresent(attendeeEmail, forKey: .attendeeEmail)
+        try container.encodeIfPresent(colorName, forKey: .colorName)
     }
     
     // ^^ Triển khai Equatable để so sánh sự kiện
